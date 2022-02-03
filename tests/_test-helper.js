@@ -1,4 +1,6 @@
 import o from 'ospec'
+import fs from 'fs'
+import path from 'path'
 import isEqual from 'lodash/isEqual.js'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { BN, Account, Address, pubToAddress, toBuffer } from 'ethereumjs-util'
@@ -10,6 +12,24 @@ const { default: VM } = evm
 import ejs from '@ethereumjs/common'
 const { default: Common, Chain, Hardfork } = ejs
 
+
+const importCache = {}
+
+export function generateFlowCode(importMetaUrl, interpolations) {
+  if (importCache[importMetaUrl]) {
+    return importCache[importMetaUrl]
+  }
+
+  const url = new URL('.', importMetaUrl);
+  let code = fs.readFileSync(url.pathname + path.basename(importMetaUrl, '.test.js') + '.pl', 'utf8')
+
+  for (let prop in interpolations) {
+    code = code.replace(`{{${prop}}}`, interpolations[prop].toString())
+  }
+
+  importCache[importMetaUrl] = code
+  return code
+}
 
 export class EVM {
   accounts = []

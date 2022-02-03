@@ -1,48 +1,12 @@
 import o from 'ospec'
-import { EVM } from '../_test-helper.js'
+import { EVM, generateFlowCode } from '../_test-helper.js'
 import { createFlow } from '../../index.js'
 import isEqual from 'lodash/isEqual.js'
 
+const __dirname = new URL('.', import.meta.url).pathname;
+
 o.spec('Integration: Tuition', () => {
   o.specTimeout(2500)
-
-  const generateFlowCode = (contractAddr) => `
-    address(tuition, '${contractAddr}').
-
-    abi(tuition, [
-      owner: address / view,
-      locked: bool / view,
-      'TREASURY': address / view,
-      contribute: payable,
-      previousOwner: address / view,
-      isStaff(address): bool / view,
-      balance(address): uint256 / view,
-      renounceOwnership,
-      refundUser(address),
-      alreadyPaid(address): bool / view,
-      transferOwnership(address),
-      manageStaff(address, bool),
-      changeTreasuryAddress(address),
-      moveStudentFundsToTreasury(address),
-      permanentlyMoveAllFundsToTreasuryAndLockContract
-    ]).
-
-    prompt([ text('You are staff')     ]) :- is_staff(true).
-    prompt([ text('You are not staff') ]) :- is_staff(false).
-
-    prompt(Actions) :- findall(Action, action(Action), Actions).
-
-    action(
-      button('Owner', [
-        call_fn(tuition, owner, [Addr]),
-        log_message(text('Owner address: ', Addr))
-      ])
-    ).
-
-    is_staff(Bool) :-
-      get(me/address, Addr),
-      call_fn(tuition, isStaff(Addr), [Bool]).
-  `
 
   let evm, contract, owner, treasury, staff;
   let flow;
@@ -54,7 +18,7 @@ o.spec('Integration: Tuition', () => {
 
     contract = await evm.deploy(bytecode, ['address', 'address', 'address[]'], [owner.address, treasury.address, []])
 
-    flow = await createFlow(generateFlowCode(contract), {
+    flow = await createFlow(generateFlowCode(import.meta.url, { contractAddr: contract }), {
       userAddress: staff.address,
       async onCallFn({ signer, contract, functionSig, args, returnType, mutability }) {
         // TODO: Cache view functions by block
