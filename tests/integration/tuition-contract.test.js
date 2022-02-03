@@ -1,5 +1,5 @@
 import o from 'ospec'
-import { EVM, assertHasNode } from '../_test-helper.js'
+import { EVM } from '../_test-helper.js'
 import { createFlow } from '../../index.js'
 import isEqual from 'lodash/isEqual.js'
 
@@ -30,6 +30,15 @@ o.spec('Integration: Tuition', () => {
     prompt([ text('You are staff')     ]) :- is_staff(true).
     prompt([ text('You are not staff') ]) :- is_staff(false).
 
+    prompt(Actions) :- findall(Action, action(Action), Actions).
+
+    action(
+      button('Owner', [
+        call_fn(tuition, owner, [Addr]),
+        log_effect(text('Owner address: ', Addr))
+      ])
+    ).
+
     is_staff(Bool) :-
       get(me/address, Addr),
       call_fn(tuition, isStaff(Addr), [Bool]).
@@ -48,6 +57,7 @@ o.spec('Integration: Tuition', () => {
     flow = await createFlow(generateFlowCode(contract), {
       userAddress: staff.address,
       async onCallFn({ signer, contract, functionSig, args, returnType, mutability }) {
+        // TODO: Cache view functions by block
         try {
           const callArgs = [contract, returnType.length ? `${functionSig}: ${returnType[0]}` : functionSig, args]
           if (mutability.includes('view')) {
@@ -65,14 +75,26 @@ o.spec('Integration: Tuition', () => {
     })
   })
 
+  async function promptExists(signer, blockNum, query, count=1) {
+    count =
+      count === true ? 1 :
+      count === false ? 0 :
+      count
+    o(await flow.promptExists(signer, blockNum, query, count)).equals(count)
+  }
+
   o('Detects staff', async () => {
-    assertHasNode(['text', "'You are not staff'"], await flow.getPrompts(staff, 10))
+    await promptExists(staff, 10, `button('Owner', _)`)
+    await promptExists(staff, 10, `text('You are staff')`, false)
+    await promptExists(staff, 10, `text('You are not staff')`)
 
     // Update state, then ensure prompt changed
     await owner.call(contract, 'manageStaff(address,bool)', [staff.address, true])
     o(await owner.get(contract, 'isStaff(address): bool', [staff.address])).deepEquals([true]) // Sanity check
 
-    assertHasNode(['text', "'You are staff'"], await flow.getPrompts(staff, 10))
+    await promptExists(staff, 11, `button('Owner', _)`)
+    await promptExists(staff, 11, `text('You are staff')`)
+    await promptExists(staff, 11, `text('You are not staff')`, false)
   })
 })
 

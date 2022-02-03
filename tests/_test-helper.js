@@ -11,24 +11,6 @@ import ejs from '@ethereumjs/common'
 const { default: Common, Chain, Hardfork } = ejs
 
 
-export function assertHasNode(targetNode, promptTree) {
-  const node = findNode(targetNode, promptTree)
-  o(node).deepEquals(targetNode)
-}
-
-function findNode(target, promptTree) {
-  if (isEqual(target, promptTree)) {
-    return promptTree
-  }
-  for (let node of promptTree) {
-    if (Array.isArray(node)) {
-      let innerNode = findNode(target, node)
-      if (innerNode) return innerNode
-    }
-  }
-}
-
-
 export class EVM {
   accounts = []
 

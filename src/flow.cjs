@@ -48,6 +48,7 @@ async function createFlow(flowCode, {
 
       return await onCallFn({
         args,
+        block: currentBlock,
         signer: currentSigner,
         contract: targetAddress,
         mutability,
@@ -159,6 +160,16 @@ async function createFlow(flowCode, {
     is_mutability(X) :- member(X, [view, payable]).
 
 
+    prompt_exists(Query, Ps) :-
+      is_list(Ps),
+      !,
+      member(P, Ps),
+      prompt_exists(Query, P).
+
+    prompt_exists(Query, P) :-
+      subsumes_term(Query, P).
+
+
     terms_to_list([], []) :- !.
 
     terms_to_list([X | Xs], [Y | Ys]) :-
@@ -204,7 +215,7 @@ async function createFlow(flowCode, {
   let currentSigner = null
   let currentBlock = { number: 0, cache: {} }
 
-  return {
+  const api = {
     async getPrompts(signer, blockNum) {
       currentSigner = signer
       if (blockNum !== currentBlock.number) {
@@ -234,6 +245,39 @@ async function createFlow(flowCode, {
       return prompts
     },
 
+    async matchPrompts(signer, blockNum, query) {
+      currentSigner = signer
+      if (blockNum !== currentBlock.number) {
+        currentBlock = { number: blockNum, cache: {} }
+      }
+
+      try {
+        // await session.promiseQuery(`call(greeter, greet, [Greeting]).`)
+        await session.promiseQuery(`prompt(Prompt), prompt_exists(${query}, Prompt).`)
+      }
+      catch(err) {
+        console.log("parse query error", err)
+      }
+
+      let answers = []
+      try {
+        for await (let answer of session.promiseAnswers()) {
+          // console.log('->>', session.format_answer(answer), answer)
+          answers.push(answer.links.Prompt.toJavaScript({ quoted: true }))
+          // console.log(answers[answers.length-1])
+        }
+      }
+      catch(err) {
+        console.log("o no", err.toString(), err) // TODO: Why no throw for async?
+      }
+      return answers
+    },
+
+    async promptExists(signer, blockNum, query, count=1) {
+      const results = await api.matchPrompts(signer, blockNum, query)
+      return results.length
+    },
+
     async execute(actions) {
       console.log("EXECUTE", arrayToString(actions))
       try {
@@ -250,6 +294,8 @@ async function createFlow(flowCode, {
       }
     }
   }
+
+  return api
 }
 
 function arrayToString(arr) {
