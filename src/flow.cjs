@@ -225,7 +225,10 @@ async function createFlow(flowCode, {
       Term =.. TermList,
       assertz(effect(log_message(Term))).
 
-    ${flowCode}
+    ${
+      // TODO SECURITY: Parse and disallow certain built-ins
+      flowCode
+    }
   `)
 
   // await new Promise(() => {})
