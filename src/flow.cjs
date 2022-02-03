@@ -24,7 +24,7 @@ async function createFlow(flowCode, {
     uiState: {},
 
     setUiState(path, value) {
-      console.log("Setting", path, value)
+      // console.log("Setting", path, value)
       if (path.length === 0) {
         throw new Error('set/2 - No path provided')
       }
@@ -46,7 +46,7 @@ async function createFlow(flowCode, {
       const functionSig = `${functionName}(${paramTypes.join(',')})`
       // console.log("sig:", functionSig)
 
-      return await onCallFn({
+      const returnValue = await onCallFn({
         args,
         block: currentBlock,
         signer: currentSigner,
@@ -56,6 +56,14 @@ async function createFlow(flowCode, {
         returnType,
         functionSig,
       })
+      // console.log(functionSig, '=>', returnValue)
+
+      return returnValue.map((value, i) =>
+        // Maintain internal consistency by ensuring all addresses are always lowercase
+        returnType[i] === 'address'
+        ? value.toLowerCase()
+        : value
+      )
     }
   }
 
@@ -67,6 +75,7 @@ async function createFlow(flowCode, {
     :- use_module(library(lists)).
     :- use_module(library(js)).
     :- op(950, yfx, '??').
+    :- dynamic(effect/1).
 
     '??'(Pred, Err) :- Pred -> true; throw(assert_error(Err)).
 
@@ -77,7 +86,7 @@ async function createFlow(flowCode, {
 
 
     get(Key, Value) :- prop(context, Top), get_(Top, Key, Value).
-    get(Key, Value) :- prop(uiState, Top), get_(Top, Key, Value), write(got(Key,Value)).
+    get(Key, Value) :- prop(uiState, Top), get_(Top, Key, Value).
 
     get_(Top, Ns/Key, Value) :-
       !,
@@ -88,7 +97,6 @@ async function createFlow(flowCode, {
       prop(Top, TopLevelKey, Value).
 
     set(Path0, Value) :-
-      write(settttting(Path0)),
       path_flat(Path0, Path),
       apply(setUiState, [Path, Value], _).
 
@@ -120,7 +128,6 @@ async function createFlow(flowCode, {
       ) ?? 'ABI function not found',
 
       apply(callFn, [Addr, Fn, Mut, ParamsTypes, Args, Ret], Result).
-
 
     %%
     %% Parses our prolog term DSL into function return type and mutability data.
@@ -167,7 +174,8 @@ async function createFlow(flowCode, {
       prompt_exists(Query, P).
 
     prompt_exists(Query, P) :-
-      subsumes_term(Query, P).
+      subsumes_term(Query, P),
+      Query = P.
 
 
     terms_to_list([], []) :- !.
@@ -189,16 +197,33 @@ async function createFlow(flowCode, {
       terms_to_list(Xs, Ys).
 
 
-    execute_all([A | As], E) :-
-      (execute(A), !; true),
-      execute_all(As, E).
+    %%
+    %% Execution and effects
+    %%
+    execute_all(Actions, Effects) :-
+      retractall(effect(_)),
+      execute_all_(Actions),
+      findall(E, effect(E), Effects).
 
-    execute_all([], [done]).
+    execute_all_([A | As]) :-
+      (execute(A), !; true),
+      execute_all_(As).
+
+    execute_all_([]).
 
 
     execute([set, K, V]) :-
+      !,
       (atom(K) -> Path = K; Path =.. K),
       set(Path, V).
+
+    execute(TermList) :-
+      Term =.. TermList,
+      call(Term).
+
+    log_message(TermList) :-
+      Term =.. TermList,
+      assertz(effect(log_message(Term))).
 
     ${flowCode}
   `)
@@ -245,53 +270,63 @@ async function createFlow(flowCode, {
       return prompts
     },
 
-    async matchPrompts(signer, blockNum, query) {
+    async matchPrompts(signer, blockNum, matchQuery, selectVariable) {
       currentSigner = signer
       if (blockNum !== currentBlock.number) {
         currentBlock = { number: blockNum, cache: {} }
       }
 
-      try {
-        // await session.promiseQuery(`call(greeter, greet, [Greeting]).`)
-        await session.promiseQuery(`prompt(Prompt), prompt_exists(${query}, Prompt).`)
-      }
-      catch(err) {
-        console.log("parse query error", err)
-      }
+      const selectQuery = selectVariable
+        ? `, terms_to_list(${selectVariable}, ${selectVariable}List)`
+        : ''
+      await session.promiseQuery(`prompt(Prompt), prompt_exists(${matchQuery}, Prompt)${selectQuery}.`)
 
       let answers = []
-      try {
-        for await (let answer of session.promiseAnswers()) {
-          // console.log('->>', session.format_answer(answer), answer)
-          answers.push(answer.links.Prompt.toJavaScript({ quoted: true }))
-          // console.log(answers[answers.length-1])
-        }
+      for await (let answer of session.promiseAnswers()) {
+        // console.log('->>', session.format_answer(answer), answer)
+        answers.push(
+          selectVariable
+          ? { [selectVariable]: answer.links[selectVariable+'List'].toJavaScript({ quoted: true }) }
+          : {}
+        )
+        // console.log(answers[answers.length-1])
       }
-      catch(err) {
-        console.log("o no", err.toString(), err) // TODO: Why no throw for async?
-      }
+
       return answers
     },
 
-    async promptExists(signer, blockNum, query, count=1) {
+    async promptCount(signer, blockNum, query) {
       const results = await api.matchPrompts(signer, blockNum, query)
       return results.length
     },
 
+    async effectCount(query) {
+      await session.promiseQuery(`effect(${query}).`)
+      let answerCount = 0
+      for await (let answer of session.promiseAnswers()) {
+        // console.log('->>', session.format_answer(answer), answer)
+        answerCount += 1
+      }
+      return answerCount
+    },
+
     async execute(actions) {
-      console.log("EXECUTE", arrayToString(actions))
+      const effects = []
       try {
-        await session.promiseQuery(`execute_all(${arrayToString(actions)}, Effects).`)
+        await session.promiseQuery(`execute_all(${arrayToString(actions)}, Effects0), terms_to_list(Effects0, Effects).`)
         for await (let answer of session.promiseAnswers()) {
           // Effects
-          console.log('!->>', session.format_answer(answer), answer)
-          console.log(answer.links.Effects.toJavaScript({ quoted: true }))
+          // console.log('!->>', session.format_answer(answer), answer)
+          const newEffects = answer.links.Effects.toJavaScript({ quoted: true })
+          // console.log(newEffects)
+          effects.push(...newEffects)
         }
       }
       catch(err) {
         console.log("Execute error", err)
         throw new Error(err.args[0].toJavaScript())
       }
+      return { effects }
     }
   }
 

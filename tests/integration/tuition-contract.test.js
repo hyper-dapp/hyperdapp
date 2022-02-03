@@ -35,7 +35,7 @@ o.spec('Integration: Tuition', () => {
     action(
       button('Owner', [
         call_fn(tuition, owner, [Addr]),
-        log_effect(text('Owner address: ', Addr))
+        log_message(text('Owner address: ', Addr))
       ])
     ).
 
@@ -80,7 +80,15 @@ o.spec('Integration: Tuition', () => {
       count === true ? 1 :
       count === false ? 0 :
       count
-    o(await flow.promptExists(signer, blockNum, query, count)).equals(count)
+    o(await flow.promptCount(signer, blockNum, query)).equals(count)
+  }
+
+  async function effectExists(query, count=1) {
+    count =
+      count === true ? 1 :
+      count === false ? 0 :
+      count
+    o(await flow.effectCount(query)).equals(count)
   }
 
   o('Detects staff', async () => {
@@ -95,6 +103,16 @@ o.spec('Integration: Tuition', () => {
     await promptExists(staff, 11, `button('Owner', _)`)
     await promptExists(staff, 11, `text('You are staff')`)
     await promptExists(staff, 11, `text('You are not staff')`, false)
+  })
+
+  o('Gets owner address', async () => {
+    const [{ Action }] = await flow.matchPrompts(staff, 10, `button('Owner', Action)`, 'Action')
+
+    const result = await flow.execute(Action)
+    o(result.effects[0][0]).equals('log_message')
+    o(result.effects[0][1][2]).equals(`'${owner.address}'`)
+
+    await effectExists(`log_message(text(_, '${owner.address}'))`)
   })
 })
 
