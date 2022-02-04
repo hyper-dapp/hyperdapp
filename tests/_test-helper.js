@@ -31,7 +31,10 @@ export function generateFlowCode(importMetaUrl, interpolations) {
   return code
 }
 
+class RevertError extends Error {}
+
 export class EVM {
+  static RevertError = RevertError
   accounts = []
 
   async init() {
@@ -76,15 +79,16 @@ export class EVM {
     return AbiCoder.decode([returnType], result.execResult.returnValue)
   }
 
-  async call(accountIndex, contract, fnSigAndMaybeReturnType, args) {
+  async call(accountIndex, contract, fnSigAndMaybeReturnType, args, value) {
     const [fnSig, returnType] = fnSigAndMaybeReturnType.trim().split(/: ?/)
     const calldata = getCalldata(fnSig, args)
-    // console.log("!>", fnSig, calldata)
+    // console.log("!>", fnSig, calldata, value)
     const tx = await this.runTx(accountIndex, {
       to: contract,
       gasPrice: "0x09184e72a000",
       gasLimit: "0x90710",
-      data: calldata
+      data: calldata,
+      value: '0x' + (value || 0n).toString(16),
     })
 
     // TODO: Support tuples
@@ -108,8 +112,14 @@ export class EVM {
     const returnValue = results.execResult.returnValue.toString('hex')
 
     if (results.execResult?.exceptionError) {
-      console.error("Transaction error:", results.execResult.exceptionError, results.execResult)
-      throw results.execResult.exceptionError
+      if (returnValue) {
+        const message = AbiCoder.decode(['string'], Buffer.from(returnValue, 'hex').slice(4))
+        throw new RevertError(message)
+      }
+      else {
+        console.error("Transaction error:", results.execResult.exceptionError, returnValue, results.execResult)
+        throw results.execResult.exceptionError
+      }
     }
 
     // console.log('Gas used:', results.gasUsed.toString())

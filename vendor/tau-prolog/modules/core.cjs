@@ -532,15 +532,18 @@
 		var n = num.substr(2);
 		switch(num.substr(0,2).toLowerCase()) {
 			case "0x":
-				return parseInt(n, 16);
 			case "0b":
-				return parseInt(n, 2);
 			case "0o":
-				return parseInt(n, 8);
+				return BigInt(num);
 			case "0'":
 				return escape(n)[0];
 			default:
-				return parseFloat(num);
+				try {
+					return BigInt(num)
+				}
+				catch(_) {
+					return parseFloat(num);
+				}
 		}
 	}
 
@@ -1546,9 +1549,9 @@
 
 	// Greatest common divisor
 	function gcd(a, b) {
-		if(b === 0)
+		if(!b)
 			return a;
-		return Math.abs(gcd(b, a % b));
+		return abs(gcd(b, a % b));
 	}
 	
 	
@@ -1563,7 +1566,7 @@
 	// Numbers
 	function Num( value, is_float ) {
 		this.is_float = is_float !== undefined ? is_float : parseInt( value ) !== value;
-		this.value = this.is_float ? value : parseInt( value );
+		this.value = this.is_float ? value : BigInt( value );
 	}
 	
 	// Terms
@@ -1655,7 +1658,7 @@
 		this.format_success = function( state ) { return state.substitution; };
 		this.format_error = function( state ) { return state.goal; };
 		this.flag = {	
-			bounded: pl.flag.bounded.value,
+			// bounded: pl.flag.bounded.value,
 			max_integer: pl.flag.max_integer.value,
 			min_integer: pl.flag.min_integer.value,
 			integer_rounding_function: pl.flag.integer_rounding_function.value,
@@ -1829,6 +1832,7 @@
 	
 	// Variables
 	Var.prototype.toString = function( options ) {
+		options = !options ? {} : options;
 		if(options.variable_names) {
 			var pointer = options.variable_names;
 			while(pl.type.is_term(pointer) && pointer.indicator === "./2") {
@@ -3551,7 +3555,7 @@
 				
 				// Number
 				number: function( obj, tobj ) {
-					return typeof obj === "number";
+					return typeof obj === "number" || typeof obj === "bigint";
 				},
 				
 				// String
@@ -4052,7 +4056,7 @@
 				"abs/1": {
 					type_args: null,
 					type_result: null,
-					fn: function( x, _ ) { return Math.abs( x ); }
+					fn: function( x, _ ) { return abs( x ); }
 				},
 				"sign/1": {
 					type_args: null,
@@ -4112,12 +4116,12 @@
 				"asin/1": {
 					type_args: null,
 					type_result: true,
-					fn: function( x, thread ) { return Math.abs(x) <= 1 ? Math.asin(x) : pl.error.evaluation("undefined", thread.__call_indicator); }
+					fn: function( x, thread ) { return abs(x) <= 1 ? Math.asin(x) : pl.error.evaluation("undefined", thread.__call_indicator); }
 				},
 				"acos/1": {
 					type_args: null,
 					type_result: true,
-					fn: function( x, thread ) { return Math.abs(x) <= 1 ? Math.acos(x) : pl.error.evaluation("undefined", thread.__call_indicator); }
+					fn: function( x, thread ) { return abs(x) <= 1 ? Math.acos(x) : pl.error.evaluation("undefined", thread.__call_indicator); }
 				},
 				"atan/1": {
 					type_args: null,
@@ -4186,13 +4190,13 @@
 				},
 				"**/2": {
 					type_args: null,
-					type_result: true,
-					fn: function( x, y, _ ) { return Math.pow(x, y); }
+					type_result: null,
+					fn: function( x, y, _ ) { return x ** y; }
 				},
 				"^/2": {
 					type_args: null,
 					type_result: null,
-					fn: function( x, y, _ ) { return Math.pow(x, y); }
+					fn: function( x, y, _ ) { return typeof x === 'bigint' ? x ** y : Math.pow(x, y); }
 				},
 				"<</2": {
 					type_args: false,
@@ -4227,17 +4231,21 @@
 				"mod/2": {
 					type_args: false,
 					type_result: false,
-					fn: function( x, y, thread ) { return y ? x - Math.floor( x / y ) * y : pl.error.evaluation( "zero_divisor", thread.__call_indicator ); }
+					fn: function( x, y, thread ) {
+						return y
+							? (typeof x === 'bigint' ? x - (x / y) * y : x - Math.floor( x / y ) * y)
+							: pl.error.evaluation( "zero_divisor", thread.__call_indicator );
+					}
 				},
 				"max/2": {
 					type_args: null,
 					type_result: null,
-					fn: function( x, y, _ ) { return Math.max( x, y ); }
+					fn: function( x, y, _ ) { return x > y ? x : y; }
 				},
 				"min/2": {
 					type_args: null,
 					type_result: null,
-					fn: function( x, y, _ ) { return Math.min( x, y ); }
+					fn: function( x, y, _ ) { return x < y ? x : y; }
 				},
 				"gcd/2": {
 					type_args: false,
@@ -4553,11 +4561,11 @@
 		flag: {
 			
 			// Bounded numbers
-			bounded: {
-				allowed: [new Term( "true" ), new Term( "false" )],
-				value: new Term( "true" ),
-				changeable: false
-			},
+			// bounded: {
+			// 	allowed: [new Term( "true" ), new Term( "false" )],
+			// 	value: new Term( "true" ),
+			// 	changeable: false
+			// },
 			
 			// Maximum integer
 			max_integer: {
@@ -4770,8 +4778,8 @@
 					return value;
 				} else if( value === Number.POSITIVE_INFINITY || value === Number.NEGATIVE_INFINITY ) {
 					return pl.error.evaluation( "overflow", thread.__call_indicator );
-				} else if( type === false && thread.get_flag( "bounded" ).id === "true" && (value > thread.get_flag( "max_integer" ).value || value < thread.get_flag( "min_integer" ).value) ) {
-					return pl.error.evaluation( "int_overflow", thread.__call_indicator );
+				// } else if( type === false && thread.get_flag( "bounded" ).id === "true" && (value > thread.get_flag( "max_integer" ).value || value < thread.get_flag( "min_integer" ).value) ) {
+				// 	return pl.error.evaluation( "int_overflow", thread.__call_indicator );
 				} else {
 					return new Num( value, type );
 				}
@@ -4979,6 +4987,12 @@
 		}
 		
 	};
+
+	function abs(n) {
+		return typeof n === 'bigint'
+			?	(n < 0 ? n * -1n : n)
+			: Math.abs(n)
+	}
 
 	// Built-in predicates
 	pl.builtin = new Module("system", {
@@ -7254,9 +7268,9 @@
 			} else {
 				if( pl.type.is_variable( m ) || m.value > 0 ) {
 					if( pl.type.is_variable( n ) ) {
-						thread.prepend( [new State( point.goal.replace( new Term( "=", [n, new Num( m.value-1, false )] ) ), point.substitution, point )] );
+						thread.prepend( [new State( point.goal.replace( new Term( "=", [n, new Num( m.value-1n, false )] ) ), point.substitution, point )] );
 					} else {
-						thread.prepend( [new State( point.goal.replace( new Term( "=", [m, new Num( n.value+1, false )] ) ), point.substitution, point )] );
+						thread.prepend( [new State( point.goal.replace( new Term( "=", [m, new Num( n.value+1n, false )] ) ), point.substitution, point )] );
 					}
 				}
 			}

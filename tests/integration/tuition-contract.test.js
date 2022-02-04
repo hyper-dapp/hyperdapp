@@ -1,26 +1,24 @@
 import o from 'ospec'
 import { EVM, generateFlowCode } from '../_test-helper.js'
 import { createFlow } from '../../index.js'
-import isEqual from 'lodash/isEqual.js'
 
 const __dirname = new URL('.', import.meta.url).pathname;
 
 o.spec('Integration: Tuition', () => {
   o.specTimeout(2500)
 
-  let evm, contract, owner, treasury, staff;
+  let evm, contract, owner, treasury, staff, student;
   let flow;
   o.beforeEach(async () => {
     evm = new EVM()
     await evm.init()
 
-    ;[owner, treasury, staff] = evm.accounts
+    ;[owner, treasury, staff, student] = evm.accounts
 
     contract = await evm.deploy(bytecode, ['address', 'address', 'address[]'], [owner.address, treasury.address, []])
 
     flow = await createFlow(generateFlowCode(import.meta.url, { contractAddr: contract }), {
-      userAddress: staff.address,
-      async onCallFn({ signer, contract, functionSig, args, returnType, mutability }) {
+      async onCallFn({ signer, contract, functionSig, args, returnType, value, mutability }) {
         // TODO: Cache view functions by block
         try {
           const callArgs = [contract, returnType.length ? `${functionSig}: ${returnType[0]}` : functionSig, args]
@@ -28,23 +26,29 @@ o.spec('Integration: Tuition', () => {
             return await signer.get(...callArgs)
           }
           else {
-            return (await signer.call(...callArgs)).returnValue
+            return (await signer.call(...callArgs, value)).returnValue
           }
         }
         catch(err) {
-          console.log('Unexpected contract call error', err)
-          throw err
+          if (err instanceof EVM.RevertError) {
+            console.log(`Contract reverted: '${err.message}'`)
+            throw err
+          }
+          else {
+            console.log('Unexpected contract call error', err)
+            throw err
+          }
         }
       },
     })
   })
 
-  async function promptExists(signer, blockNum, query, count=1) {
+  async function promptExists(blockNum, query, count=1) {
     count =
       count === true ? 1 :
       count === false ? 0 :
       count
-    o(await flow.promptCount(signer, blockNum, query)).equals(count)
+    o(await flow.promptCount(blockNum, query)).equals(count)
   }
 
   async function effectExists(query, count=1) {
@@ -56,23 +60,36 @@ o.spec('Integration: Tuition', () => {
   }
 
   o('Detects staff', async () => {
-    await promptExists(staff, 10, `button('Owner', _)`)
-    await promptExists(staff, 10, `text('You are staff')`, false)
-    await promptExists(staff, 10, `text('You are not staff')`)
+    await flow.init(staff, 10)
+    await promptExists(10, `button('Owner', _)`)
+    await promptExists(10, `text('You are staff')`, false)
+    await promptExists(10, `text('You are not staff')`)
 
     // Update state, then ensure prompt changed
     await owner.call(contract, 'manageStaff(address,bool)', [staff.address, true])
     o(await owner.get(contract, 'isStaff(address): bool', [staff.address])).deepEquals([true]) // Sanity check
 
-    await promptExists(staff, 11, `button('Owner', _)`)
-    await promptExists(staff, 11, `text('You are staff')`)
-    await promptExists(staff, 11, `text('You are not staff')`, false)
+    await promptExists(11, `button('Owner', _)`)
+    await promptExists(11, `text('You are staff')`)
+    await promptExists(11, `text('You are not staff')`, false)
+  })
+
+  o('Detects non-staff non-admin', async () => {
+    await flow.init(student, 10)
+    await promptExists(10, `button('Pay Deposit', _)`)
+
+    const [{ Actions }] = await flow.matchPrompts(10, `button('Pay Deposit', Actions)`, 'Actions')
+    await flow.execute(Actions)
+
+    await promptExists(11, `button('Pay Deposit', _)`, false)
+    await promptExists(11, `text('Congratulations! Your deposit has been registered.')`)
   })
 
   o('Gets owner address', async () => {
-    const [{ Action }] = await flow.matchPrompts(staff, 10, `button('Owner', Action)`, 'Action')
+    await flow.init(staff, 10)
+    const [{ Actions }] = await flow.matchPrompts(10, `button('Owner', Actions)`, 'Actions')
 
-    const result = await flow.execute(Action)
+    const result = await flow.execute(Actions)
     o(result.effects[0][0]).equals('log_message')
     o(result.effects[0][1][2]).equals(`'${owner.address}'`)
 

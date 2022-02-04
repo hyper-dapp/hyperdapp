@@ -7,7 +7,6 @@ exports.createFlow = createFlow
 
 async function createFlow(flowCode, {
   onCallFn,
-  userAddress,
 }) {
 
   // The "global" context that tau prolog code has access to
@@ -17,7 +16,8 @@ async function createFlow(flowCode, {
 
     context: {
       me: {
-        address: userAddress
+        // Populated via init()
+        address: null
       },
     },
 
@@ -39,16 +39,24 @@ async function createFlow(flowCode, {
       current[lastKey] = value
     },
 
-    async callFn(targetAddress, functionName, mutability, paramTypes, args, returnType) {
+    async callFn(targetAddress, functionName, mutability, paramTypes, args, returnType, options) {
       // TODO: Inspect library code to determine why errors here do not throw
       // console.log("CALLING", targetAddress, functionName, paramTypes, args, returnType)
 
       const functionSig = `${functionName}(${paramTypes.join(',')})`
       // console.log("sig:", functionSig)
 
+      let value = 0n
+      for (let opt of options) {
+        if (opt[0] === 'value') {
+          value = opt[1]
+        }
+      }
+
       const returnValue = await onCallFn({
         args,
         block: currentBlock,
+        value,
         signer: currentSigner,
         contract: targetAddress,
         mutability,
@@ -79,7 +87,6 @@ async function createFlow(flowCode, {
 
     '??'(Pred, Err) :- Pred -> true; throw(assert_error(Err)).
 
-
     prompt_list(Out) :-
       prompt(Prompt),
       terms_to_list(Prompt, Out).
@@ -107,8 +114,11 @@ async function createFlow(flowCode, {
     path_list(A/B, [B | Rest]) :- !, path_flat(A, Rest).
     path_list(A, [A]).
 
-
     call_fn(Contract, Calldata, Result) :-
+      call_fn(Contract, Calldata, Result, []).
+
+    call_fn(Contract, Calldata, Result, Options0) :-
+      parse_call_fn_options(ctx(Contract, Calldata), Options0, Options),
       ground(Contract) ?? 'Contract must be ground',
       ground(Calldata) ?? 'Calldata must be ground',
       is_list(Result) ?? 'Return value must be a list',
@@ -127,7 +137,23 @@ async function createFlow(flowCode, {
         !
       ) ?? 'ABI function not found',
 
-      apply(callFn, [Addr, Fn, Mut, ParamsTypes, Args, Ret], Result).
+      terms_to_list(Options, Opts),
+      apply(callFn, [Addr, Fn, Mut, ParamsTypes, Args, Ret, Opts], Result).
+
+    parse_call_fn_options(Ctx, [X|Xs], [Y|Ys]) :-
+      ground(X) ?? unground_fn_call_option(X, Ctx),
+      (
+        % TODO: Add more options here when needed
+        value(eth(N0)) = X, number(N0) ?? invalid_fn_call_option(eth(N0), Ctx) ->
+          N is N0 * 10 ** 18,
+          Y = value(N);
+        value(N) = X, number(N) ?? invalid_fn_call_option(N, Ctx) ->
+          Y = X;
+        false
+      ) ?? invalid_call_fn_option(X, Ctx),
+      parse_call_fn_options(Ctx, Xs, Ys).
+
+    parse_call_fn_options(_, [], []).
 
     %%
     %% Parses our prolog term DSL into function return type and mutability data.
@@ -178,51 +204,56 @@ async function createFlow(flowCode, {
       Query = P.
 
 
-    terms_to_list([], []) :- !.
+    terms_to_list([X | Xs], [X | Ys]) :-
+      \\+ compound(X), !,
+      terms_to_list(Xs, Ys).
 
-    terms_to_list([X | Xs], [Y | Ys]) :-
-      is_list(X),
-      !,
+    terms_to_list([X | Xs], [['[list]'|Y] | Ys]) :-
+      is_list(X), !,
       terms_to_list(X, Y),
       terms_to_list(Xs, Ys).
 
-    terms_to_list([X | Xs], [Y | Ys]) :-
-      compound(X),
-      !,
-      X =.. Y0,
-      terms_to_list(Y0, Y),
+    terms_to_list([X | Xs], [[Atom|Args] | Ys]) :-
+      X =.. [Atom | Args0],
+      terms_to_list(Args0, Args),
       terms_to_list(Xs, Ys).
 
-    terms_to_list([X | Xs], [X | Ys]) :-
-      terms_to_list(Xs, Ys).
+    terms_to_list([], []).
+
+
+    list_to_terms([Y | Ys], [Y | Xs]) :-
+      \\+ compound(Y), !,
+      list_to_terms(Ys, Xs).
+
+    list_to_terms([['[list]'|ListItems0] | Ys], [ListItems | Xs]) :-
+      !,
+      list_to_terms(ListItems0, ListItems),
+      list_to_terms(Ys, Xs).
+
+    list_to_terms([[Atom|Args0] | Ys], [X | Xs]) :-
+      list_to_terms(Args0, Args),
+      X =.. [Atom | Args],
+      list_to_terms(Ys, Xs).
+
+    list_to_terms([], []).
 
 
     %%
     %% Execution and effects
     %%
-    execute_all(Actions, Effects) :-
+    execute_all(ActionLists, Effects) :-
       retractall(effect(_)),
+      list_to_terms(ActionLists, Actions) ?? invalid_actions(ActionLists),
       execute_all_(Actions),
       findall(E, effect(E), Effects).
 
-    execute_all_([A | As]) :-
-      (execute(A), !; true),
-      execute_all_(As).
+    execute_all_([Action | Rest]) :-
+      call(Action) ?? action_failed(Action),
+      execute_all_(Rest).
 
     execute_all_([]).
 
-
-    execute([set, K, V]) :-
-      !,
-      (atom(K) -> Path = K; Path =.. K),
-      set(Path, V).
-
-    execute(TermList) :-
-      Term =.. TermList,
-      call(Term).
-
-    log_message(TermList) :-
-      Term =.. TermList,
+    log_message(Term) :-
       assertz(effect(log_message(Term))).
 
     ${
@@ -234,21 +265,29 @@ async function createFlow(flowCode, {
   // await new Promise(() => {})
 
 
-  await session.promiseQuery(`current_predicate(init/0), init.`)
-  for await (let answer of session.promiseAnswers()) {
-    // flush
-  }
-
-
   let currentSigner = null
   let currentBlock = { number: 0, cache: {} }
 
+  function updateCurrentBlock(blockNum) {
+    env.context.me.address = currentSigner.address
+    if (blockNum !== currentBlock.number) {
+      currentBlock = { number: blockNum, cache: {} }
+    }
+  }
+
   const api = {
-    async getPrompts(signer, blockNum) {
+    async init(signer, blockNum) {
       currentSigner = signer
-      if (blockNum !== currentBlock.number) {
-        currentBlock = { number: blockNum, cache: {} }
+      updateCurrentBlock(blockNum)
+
+      await session.promiseQuery(`current_predicate(init/0), init.`)
+      for await (let answer of session.promiseAnswers()) {
+        // flush
       }
+    },
+
+    async getPrompts(blockNum) {
+      updateCurrentBlock(blockNum)
 
       let prompts = []
 
@@ -263,7 +302,8 @@ async function createFlow(flowCode, {
       try {
         for await (let answer of session.promiseAnswers()) {
           // console.log('->>', session.format_answer(answer), answer)
-          prompts.push(answer.links.Prompt.toJavaScript({ quoted: true }))
+          const prompt = answer.links.Prompt.toJavaScript({ quoted: true })
+          prompts.push(serializeNonJsonValues(prompt))
           // console.log(prompts[prompts.length-1])
         }
       }
@@ -273,14 +313,11 @@ async function createFlow(flowCode, {
       return prompts
     },
 
-    async matchPrompts(signer, blockNum, matchQuery, selectVariable) {
-      currentSigner = signer
-      if (blockNum !== currentBlock.number) {
-        currentBlock = { number: blockNum, cache: {} }
-      }
+    async matchPrompts(blockNum, matchQuery, selectVariable) {
+      updateCurrentBlock(blockNum)
 
       const selectQuery = selectVariable
-        ? `, terms_to_list(${selectVariable}, ${selectVariable}List)`
+        ? `, (terms_to_list(${selectVariable}, ${selectVariable}Out) -> true; ${selectVariable}Out = ${selectVariable})`
         : ''
       await session.promiseQuery(`prompt(Prompt), prompt_exists(${matchQuery}, Prompt)${selectQuery}.`)
 
@@ -289,7 +326,7 @@ async function createFlow(flowCode, {
         // console.log('->>', session.format_answer(answer), answer)
         answers.push(
           selectVariable
-          ? { [selectVariable]: answer.links[selectVariable+'List'].toJavaScript({ quoted: true }) }
+          ? { [selectVariable]: answer.links[selectVariable+'Out'].toJavaScript({ quoted: true }) }
           : {}
         )
         // console.log(answers[answers.length-1])
@@ -298,8 +335,8 @@ async function createFlow(flowCode, {
       return answers
     },
 
-    async promptCount(signer, blockNum, query) {
-      const results = await api.matchPrompts(signer, blockNum, query)
+    async promptCount(blockNum, query) {
+      const results = await api.matchPrompts(blockNum, query)
       return results.length
     },
 
@@ -314,6 +351,7 @@ async function createFlow(flowCode, {
     },
 
     async execute(actions) {
+      // console.log('Executing', actions)
       const effects = []
       try {
         await session.promiseQuery(`execute_all(${arrayToString(actions)}, Effects0), terms_to_list(Effects0, Effects).`)
@@ -326,7 +364,10 @@ async function createFlow(flowCode, {
         }
       }
       catch(err) {
-        console.log("Execute error", err)
+        // console.log("Execute error", err)
+        if (err instanceof Error) {
+          throw err
+        }
         throw new Error(err.args[0].toJavaScript())
       }
       return { effects }
@@ -343,4 +384,14 @@ function arrayToString(arr) {
   else {
     return arr
   }
+}
+
+function serializeNonJsonValues(xs) {
+  return xs.map(x =>
+    Array.isArray(x)
+    ? serializeNonJsonValues(x)
+    : typeof x === 'bigint'
+    ? '0x' + x.toString(16)
+    : x
+  )
 }
