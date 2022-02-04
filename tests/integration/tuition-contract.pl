@@ -64,6 +64,15 @@ prompt([
   get(tab, student),
   has_paid(true).
 
+%%
+%% Staff Tab
+%%
+prompt([ text('Staff (TODO)') ]) :- get(tab, staff).
+
+%%
+%% Staff Tab
+%%
+prompt([ text('Admin (TODO)') ]) :- get(tab, admin).
 
 %%
 %% Helpers
