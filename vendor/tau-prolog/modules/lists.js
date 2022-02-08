@@ -1,5 +1,4 @@
-var pl;
-(function( pl ) {
+export default function( pl ) {
 
 	var predicates = function() {
 		
@@ -400,13 +399,6 @@ var pl;
 		};
 	};
 
-	if(typeof module !== 'undefined') {
-		module.exports = function(p) {
-			pl = p;
-			new pl.type.Module("lists", predicates(), exports, options());
-		};
-	} else {
-		new pl.type.Module("lists", predicates(), exports, options());
-	}
+	new pl.type.Module("lists", predicates(), exports, options());
+}
 
-})( pl );

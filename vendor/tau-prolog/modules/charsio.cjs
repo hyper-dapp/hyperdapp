@@ -1,5 +1,4 @@
-var pl;
-(function(pl) {
+export default function(pl) {
 	var name = "charsio";
 	var predicates = function() {
 		return {
@@ -113,4 +112,4 @@ var pl;
 	} else {
 		new pl.type.Module(name, predicates(), exports);
 	}
-})(pl);
+}

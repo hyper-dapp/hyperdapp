@@ -1,5 +1,4 @@
-var pl;
-(function( pl ) {
+export default function( pl ) {
 
 	var predicates = function() {
 		
@@ -717,4 +716,4 @@ var pl;
 		new pl.type.Module( "os", predicates(), exports );
 	}
 
-})( pl );
+}

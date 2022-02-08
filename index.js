@@ -1,1 +1,1 @@
-export { createFlow } from './src/flow.cjs'
+export { createFlow } from './src/flow.js'

@@ -1,5 +1,4 @@
-var pl;
-(function(pl) {
+export default function(pl) {
 
 	// Extend Tau Prolog prototypes
 	var extend = function(pl) {
@@ -74,13 +73,5 @@ var pl;
 
 	}
 
-	if(typeof module !== 'undefined') {
-		module.exports = function(p) {
-			pl = p;
-			extend(pl);
-		};
-	} else {
-		extend(pl);
-	}
-
-})(pl);
+	extend(pl);
+}

@@ -67,8 +67,7 @@
 
    I place this code in the public domain. Use it in any way you want.
 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
-var pl;
-(function(pl) {
+export default function(pl) {
 	var name = "format";
 	var predicates = function() {
 		return {
@@ -185,4 +184,4 @@ var pl;
 	} else {
 		new pl.type.Module(name, predicates(), exports, options());
 	}
-})(pl);
+}

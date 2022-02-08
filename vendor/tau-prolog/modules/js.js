@@ -1,5 +1,4 @@
-var pl;
-(function( pl ) {
+export default function( pl ) {
 
 	var predicates = function() {
 		
@@ -491,16 +490,6 @@ var pl;
 	}
 	
 
-
-	if( typeof module !== 'undefined' ) {
-		module.exports = function( p ) {
-			pl = p;
-			define_properties();
-			new pl.type.Module( "js", predicates(), exports );
-		};
-	} else {
-		define_properties();
-		new pl.type.Module( "js", predicates(), exports );
-	}
-
-})( pl );
+	define_properties();
+	new pl.type.Module( "js", predicates(), exports );
+}

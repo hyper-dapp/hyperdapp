@@ -1,5 +1,4 @@
-var pl;
-(function( pl ) {
+export default function( pl ) {
 
 	var predicates = function() {
 		
@@ -221,4 +220,4 @@ var pl;
 		new pl.type.Module( "random", predicates(), exports );
 	}
 
-})( pl );
+}
