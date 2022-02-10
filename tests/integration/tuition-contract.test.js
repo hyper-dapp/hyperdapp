@@ -18,11 +18,11 @@ o.spec('Integration: Tuition', () => {
     contract = await evm.deploy(bytecode, ['address', 'address', 'address[]'], [owner.address, treasury.address, []])
 
     flow = await createFlow(generateFlowCode(import.meta.url, { contractAddr: contract }), {
-      async onCallFn({ signer, contract, functionSig, args, returnType, value, mutability }) {
+      async onCallFn({ signer, contractAddress, functionSig, args, returnType, value, mutability }) {
         // TODO: Cache view functions by block
         try {
-          const callArgs = [contract, returnType.length ? `${functionSig}: ${returnType[0]}` : functionSig, args]
-          if (mutability.includes('view')) {
+          const callArgs = [contractAddress, returnType.length ? `${functionSig}: ${returnType[0]}` : functionSig, args]
+          if (mutability.view) {
             return await signer.get(...callArgs)
           }
           else {
@@ -60,7 +60,7 @@ o.spec('Integration: Tuition', () => {
   }
 
   o('Detects staff', async () => {
-    await flow.init(staff, 10)
+    await flow.init(staff, staff.address, 10)
     await promptExists(10, `button('Owner', _)`)
     await promptExists(10, `text('You are staff')`, false)
     await promptExists(10, `text('You are not staff')`)
@@ -75,7 +75,7 @@ o.spec('Integration: Tuition', () => {
   })
 
   o('Detects non-staff non-admin', async () => {
-    await flow.init(student, 10)
+    await flow.init(student, student.address, 10)
     await promptExists(10, `button('Pay Deposit', _)`)
 
     const [{ Actions }] = await flow.matchPrompts(10, `button('Pay Deposit', Actions)`, 'Actions')
@@ -86,8 +86,9 @@ o.spec('Integration: Tuition', () => {
   })
 
   o('Gets owner address', async () => {
-    await flow.init(staff, 10)
+    await flow.init(staff, staff.address, 10)
     const [{ Actions }] = await flow.matchPrompts(10, `button('Owner', Actions)`, 'Actions')
+    // console.log("Executing", Actions)
 
     const result = await flow.execute(Actions)
     o(result.effects[0][0]).equals('log_message')

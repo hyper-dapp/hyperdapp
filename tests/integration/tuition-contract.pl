@@ -31,8 +31,8 @@ init :-
     set(tab, student)
   ).
 
-prompt([ text('You are staff')     ]) :- is_staff(true).
-prompt([ text('You are not staff') ]) :- is_staff(false).
+prompt([ text('You are staff')     ]) :- is_staff(true), prompt_once(you_are_staff).
+prompt([ text('You are not staff') ]) :- is_staff(false), prompt_once(you_are_not_staff).
 
 %%
 %% Choose tab
@@ -49,7 +49,7 @@ prompt([ button('Admin', [ set(tab, admin) ]) ]) :- get(tab, choose).
 %%
 %% Student tab
 %%
-prompt([ text('Welcome to Shipyard\'s Tuition Portal') ]) :- get(tab, student).
+prompt([ text('Welcome to Shipyard\'s Tuition Portal') ]) :- get(tab, student), prompt_once(welcome).
 prompt([
   button('Pay Deposit', [
     call_fn(tuition, contribute, [], [value(eth(1))])
