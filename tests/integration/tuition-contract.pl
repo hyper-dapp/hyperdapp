@@ -25,14 +25,15 @@ abi(tuition, [
 ]).
 
 init :-
-  (
-    (is_staff(true); is_owner(true)) ->
-    set(tab, choose), set(has_choice, true);
+  if (is_staff(true) or is_owner(true)) then {
+    set(tab, choose), set(has_choice, true)
+  }
+  else {
     set(tab, student)
-  ).
+  }.
 
-prompt([ text('You are staff')     ]) :- is_staff(true), prompt_once(you_are_staff).
-prompt([ text('You are not staff') ]) :- is_staff(false), prompt_once(you_are_not_staff).
+prompt([ text('You are staff')     ]) :- is_staff(true).
+prompt([ text('You are not staff') ]) :- is_staff(false).
 
 %%
 %% Choose tab

@@ -88,10 +88,36 @@ export async function createFlow(flowCode, {
     :- set_prolog_flag(double_quotes, string).
     :- use_module(library(lists)).
     :- use_module(library(js)).
-    :- op(950, yfx, '??').
+
     :- dynamic(effect/1).
 
+    :- op(800, xfx, or).
+    :- op(950, yfx, '??').
+    :- op(985, yfx, then).
+    :- op(985, yfx, else).
+    :- op(985, yfx, elseif).
+    :- op(990, fx, if).
+
     '??'(Pred, Err) :- Pred -> true; throw(assert_error(Err)).
+
+    if(X) :- (if_then(X, Then) -> if_call(Then); true).
+
+    if_then(then(elseif(Try, Cond), MaybeThen), Then) :-
+      !,
+      (if_then(Try, Then) -> true; call(Cond), Then = MaybeThen).
+    if_then(then(Cond, Then), Then)  :-
+      !,
+      call(Cond).
+    if_then(else(Try, MaybeThen), Then) :-
+      !,
+      (if_then(Try, Then) -> true; Then = MaybeThen).
+
+    if_then(X) :- throw(syntax_error(invalid_if, X)).
+
+    or(X,Y) :- call(X) -> true; call(Y).
+
+    if_call({Terms}) :- !, call(Terms).
+    if_call(Terms)   :- call(Terms).
 
     prompt_list(Out) :-
       prompt(Prompt),

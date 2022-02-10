@@ -80,7 +80,6 @@ async function init() {
 async function render() {
   let prompts;
   try {
-    console.log("Before")
     prompts = await flow.getPrompts(100)
     console.log("Prompts:", prompts)
   }
