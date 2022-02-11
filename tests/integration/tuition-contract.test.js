@@ -1,5 +1,5 @@
 import o from 'ospec'
-import { EVM, generateFlowCode } from '../_test-helper.js'
+import { EVM, generateFlowCode, createTestFlow } from '../_test-helper.js'
 import { createFlow } from '../../index.js'
 
 const __dirname = new URL('.', import.meta.url).pathname;
@@ -17,30 +17,9 @@ o.spec('Integration: Tuition', () => {
 
     contract = await evm.deploy(bytecode, ['address', 'address', 'address[]'], [owner.address, treasury.address, []])
 
-    flow = await createFlow(generateFlowCode(import.meta.url, { contractAddr: contract }), {
-      async onCallFn({ signer, contractAddress, functionSig, args, returnType, value, mutability }) {
-        // TODO: Cache view functions by block
-        try {
-          const callArgs = [contractAddress, returnType.length ? `${functionSig}: ${returnType[0]}` : functionSig, args]
-          if (mutability.view) {
-            return await signer.get(...callArgs)
-          }
-          else {
-            return (await signer.call(...callArgs, value)).returnValue
-          }
-        }
-        catch(err) {
-          if (err instanceof EVM.RevertError) {
-            console.log(`Contract reverted: '${err.message}'`)
-            throw err
-          }
-          else {
-            console.log('Unexpected contract call error', err)
-            throw err
-          }
-        }
-      },
-    })
+    const flowCode = generateFlowCode(import.meta.url, { contractAddr: contract })
+
+    flow = await createTestFlow(flowCode)
   })
 
   async function promptExists(blockNum, query, count=1) {

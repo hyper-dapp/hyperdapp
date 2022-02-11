@@ -12,6 +12,8 @@ const { default: VM } = evm
 import ejs from '@ethereumjs/common'
 const { default: Common, Chain, Hardfork } = ejs
 
+import { createFlow } from '../index.js'
+
 
 const importCache = {}
 
@@ -21,7 +23,7 @@ export function generateFlowCode(importMetaUrl, interpolations) {
   }
 
   const url = new URL('.', importMetaUrl);
-  let code = fs.readFileSync(url.pathname + path.basename(importMetaUrl, '.test.js') + '.pl', 'utf8')
+  let code = fs.readFileSync(url.pathname + path.basename(importMetaUrl).replace(/(\.test?)\.(js|ts)x?/, '') + '.pl', 'utf8')
 
   for (let prop in interpolations) {
     code = code.replace(`{{${prop}}}`, interpolations[prop].toString())
@@ -30,6 +32,35 @@ export function generateFlowCode(importMetaUrl, interpolations) {
   importCache[importMetaUrl] = code
   return code
 }
+
+
+export async function createTestFlow(code) {
+  return await createFlow(code, {
+    async onCallFn({ signer, contractAddress, functionSig, args, returnType, value, mutability }) {
+      // TODO: Cache view functions by block
+      try {
+        const callArgs = [contractAddress, returnType.length ? `${functionSig}: ${returnType[0]}` : functionSig, args]
+        if (mutability.view) {
+          return await signer.get(...callArgs)
+        }
+        else {
+          return (await signer.call(...callArgs, value)).returnValue
+        }
+      }
+      catch(err) {
+        if (err instanceof EVM.RevertError) {
+          console.log(`Contract reverted: '${err.message}'`)
+          throw err
+        }
+        else {
+          console.log('Unexpected contract call error', err)
+          throw err
+        }
+      }
+    },
+  })
+}
+
 
 class RevertError extends Error {}
 
