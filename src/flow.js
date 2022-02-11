@@ -112,12 +112,10 @@ export async function createFlow(flowCode, {
       !,
       (if_then(Try, Then) -> true; Then = MaybeThen).
 
-    if_then(X) :- throw(syntax_error(invalid_if, X)).
-
-    or(X,Y) :- call(X) -> true; call(Y).
-
     if_call({Terms}) :- !, call(Terms).
     if_call(Terms)   :- call(Terms).
+
+    or(X,Y) :- call(X) -> true; call(Y).
 
     prompt_list(Out) :-
       prompt(Prompt),
