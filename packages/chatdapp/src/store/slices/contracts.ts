@@ -1,5 +1,5 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { convertABIToPrologCode } from "../../helpers/contract.helper";
+import { convertABIToPrologCode } from "hyperdapp";
 
 const { Block3 } = window as any;
 const apiKey = process.env.REACT_APP_ETHERSCAN_API_KEY;
@@ -24,6 +24,7 @@ export const initContract = createAsyncThunk(
       const block3 = new Block3({ apiKey });
       const contract = await block3.loadContract(c);
       const code = convertABIToPrologCode(contract.address, contract.abi);
+      console.log(code);
       return { ...contract._, code };
     } catch (error) {}
   }
