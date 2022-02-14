@@ -1,11 +1,11 @@
-# HyperDAPP
+# Hyperdapp Monorepo
 
 
-## Running the REPL
+## Running the Hyperdapp REPL
 
 ```
-$ npm install -g http-server
-$ http-server
+$ yarn global add http-server
+$ http-server packages/hyperdapp
 ```
 
 Now visit [localhost:8080](http://localhost:8080/)
@@ -13,6 +13,6 @@ Now visit [localhost:8080](http://localhost:8080/)
 ## Development
 
 ```
-npm install
-npm test
+yarn install
+yarn workspace hyperdapp test
 ```

@@ -2,8 +2,6 @@ import o from 'ospec'
 import { EVM, generateFlowCode, createTestFlow } from '../_test-helper.js'
 import { createFlow } from '../../index.js'
 
-const __dirname = new URL('.', import.meta.url).pathname;
-
 o.spec('Integration: Tuition', () => {
   o.specTimeout(2500)
 
@@ -17,7 +15,7 @@ o.spec('Integration: Tuition', () => {
 
     contract = await evm.deploy(bytecode, ['address', 'address', 'address[]'], [owner.address, treasury.address, []])
 
-    const flowCode = generateFlowCode(import.meta.url, { contractAddr: contract })
+    const flowCode = generateFlowCode('tuition-contract.pl', { contractAddr: contract })
 
     flow = await createTestFlow(flowCode)
   })

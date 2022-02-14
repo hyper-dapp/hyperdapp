@@ -1,4 +1,3 @@
-import o from 'ospec'
 import fs from 'fs'
 import path from 'path'
 import isEqual from 'lodash/isEqual.js'
@@ -12,24 +11,74 @@ const { default: VM } = evm
 import ejs from '@ethereumjs/common'
 const { default: Common, Chain, Hardfork } = ejs
 
-import { createFlow } from '../index.js'
+import { createFlow } from 'hyperdapp'
 
+let flowsDir = ''
+export function setFlowDir(newDir) {
+  flowsDir = newDir
+}
 
-const importCache = {}
+const findCache = {}
+const readCache = {}
 
-export function generateFlowCode(importMetaUrl, interpolations) {
-  if (importCache[importMetaUrl]) {
-    return importCache[importMetaUrl]
+/**
+ * Looks up and reads a file based on a relative path.
+ * Designed to be fast and easy to use in a test environment.
+ *
+ * If a flow directory is set, generateFlowCode joins that directory
+ * with the given relative path.
+ *
+ * If no flow directory is set, it searches for a `flows/` directory,
+ * starting with the current working directory and moving upwards.
+ * */
+export function generateFlowCode(flowFileRelative, interpolations={}) {
+  let flowFile = ''
+  if (flowsDir) {
+    flowFile = path.join(flowsDir, flowFileRelative)
+  }
+  else {
+    let cacheKey = process.cwd() + flowFileRelative
+    if (findCache[cacheKey]) {
+      flowFile = findCache[cacheKey]
+    }
+    else {
+      let estimatedProjectDir = process.cwd()
+      let exists = false
+
+      while (true) {
+        flowFile = path.join(estimatedProjectDir, 'flows', flowFileRelative)
+        exists = fs.existsSync(flowFile)
+
+        if (exists || estimatedProjectDir === path.sep) {
+          break
+        }
+        estimatedProjectDir = path.dirname(estimatedProjectDir)
+      }
+
+      if (exists) {
+        findCache[cacheKey] = flowFile
+      }
+      else {
+        throw new Error(`[hyperdapp-dev] Could not find flow file: ${JSON.stringify(flowFileRelative)}`)
+      }
+    }
   }
 
-  const url = new URL('.', importMetaUrl);
-  let code = fs.readFileSync(url.pathname + path.basename(importMetaUrl).replace(/(\.test?)\.(js|ts)x?/, '') + '.pl', 'utf8')
+  if (readCache[flowFile]) {
+    return readCache[flowFile]
+  }
+
+  let code = fs.readFileSync(flowFile, 'utf8')
 
   for (let prop in interpolations) {
-    code = code.replace(`{{${prop}}}`, interpolations[prop].toString())
+    let value = interpolations[prop]
+    if (!value?.toString || value.toString() === '[object Object]') {
+      console.warn(`[hyperdapp-dev][warning] Improper interpolation value: ${JSON.stringify(value)}`)
+    }
+    code = code.replace(`{{${prop}}}`, (value ?? '').toString())
   }
 
-  importCache[importMetaUrl] = code
+  readCache[flowFile] = code
   return code
 }
 
@@ -212,3 +261,4 @@ const keyPairs = [{
   "privateKey": "0x011efa7e46629b84171385ab8952e01ef25cce3d85af18eeba674eb9c3201580",
   "publicKey": "0x7e1e120f940d782e8f667230b9a08c1f98e60ec58d629bd9c279bf07c62ab69581cbae0ace829b749d889b12128fd2e23ac48e1da4e8ae250b09ae0e64d17c17"
 }]
+

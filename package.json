@@ -1,23 +1,8 @@
 {
-  "name": "hyperdapp",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "type": "module",
-  "scripts": {
-    "test": "ospec"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
-  "devDependencies": {
-    "@ethereumjs/common": "^2.6.1",
-    "@ethereumjs/tx": "^3.5.0",
-    "@ethereumjs/vm": "^5.7.0",
-    "@ethersproject/abi": "^5.5.0",
-    "ethereumjs-util": "^7.1.4",
-    "ethers": "^5.5.4",
-    "lodash": "^4.17.21",
-    "ospec": "^4.1.1"
-  }
+  "name": "hyperdapp-mono",
+  "packageManager": "yarn@3.2.0-rc.15",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ]
 }

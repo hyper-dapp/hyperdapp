@@ -1,0 +1,22 @@
+{
+  "name": "hyperdapp",
+  "version": "0.5.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "test": "ospec"
+  },
+  "files": [
+    "index.js",
+    "src/",
+    "vendor/"
+  ],
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "hyperdapp-dev": "0.5.0",
+    "ospec": "^4.1.1"
+  }
+}
