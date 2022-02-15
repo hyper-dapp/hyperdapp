@@ -23,6 +23,7 @@ const ContractChatFeed = () => {
   useEffect(() => {
     const initChatFeed = async () => {
       if (!contractId || !account || !network) return;
+
       if (contractId === "0x3C1F9d85d20bCDBafc35c81898b95025576819E6") {
         await dispatch(initFlow(contractId));
         return;
