@@ -1,3 +1,4 @@
+import { convertABIToPrologCode } from "hyperdapp";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 
 const { Block3 } = window as any;
@@ -18,11 +19,11 @@ const initialState: IContractSlice = {};
 export const initContract = createAsyncThunk(
   "contracts/initContract",
   async (config: ContractConfig) => {
-    try {
-      const contract = new Block3.Contracts.Contract(config);
-      const block3 = new Block3({ apiKey });
-      return block3.loadContract(contract);
-    } catch (error) {}
+    const c = new Block3.Contracts.Contract(config);
+    const block3 = new Block3({ apiKey });
+    const contract = await block3.loadContract(c);
+    const code = convertABIToPrologCode(contract.abi);
+    return { ...contract._, code };
   }
 );
 
