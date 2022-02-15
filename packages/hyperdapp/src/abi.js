@@ -1,8 +1,8 @@
-export const startsWithCapitalLetter = (word) => {
+export function startsWithCapitalLetter(word) {
   return word.charCodeAt(0) >= 65 && word.charCodeAt(0) <= 90;
-};
+}
 
-export const convertABIToPrologCode = (abi) => {
+export function convertABIToPrologCode(abi) {
   const code = [];
 
   const functions = abi.filter((m) => m.type === "function");
@@ -31,4 +31,4 @@ export const convertABIToPrologCode = (abi) => {
   }
 
   return code;
-};
+}
