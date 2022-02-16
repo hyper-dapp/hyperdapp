@@ -1,6 +1,4 @@
-export function startsWithCapitalLetter(word) {
-  return word.charCodeAt(0) >= 65 && word.charCodeAt(0) <= 90;
-}
+import { escapeAtom } from 'hyperdapp';
 
 export function convertABIToPrologCode(abi) {
   const code = [];
@@ -11,7 +9,7 @@ export function convertABIToPrologCode(abi) {
     let row = ""; // function-sig: return-value / view / payable
 
     const { inputs, outputs, name, stateMutability } = method;
-    row += startsWithCapitalLetter(name) ? `'${name}'` : name;
+    row += escapeAtom(name);
 
     if (inputs.length) {
       row += "(";

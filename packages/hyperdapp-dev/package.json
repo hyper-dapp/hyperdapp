@@ -4,6 +4,9 @@
   "description": "",
   "main": "index.js",
   "type": "module",
+  "bin": {
+    "hyperdapp": "cli/index.js"
+  },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -15,6 +18,7 @@
     "@ethereumjs/tx": "^3.5.0",
     "@ethereumjs/vm": "^5.7.0",
     "@ethersproject/abi": "^5.5.0",
+    "commander": "^9.0.0",
     "ethereumjs-util": "^7.1.4",
     "ethers": "^5.5.4",
     "hyperdapp": "0.5.0",
