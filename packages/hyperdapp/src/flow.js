@@ -9,6 +9,7 @@ importPromisesModule(prolog)
 
 export async function createFlow(flowCode, {
   onCallFn,
+  onCallHttp,
 }) {
 
   // The "global" context that tau prolog code has access to
@@ -19,7 +20,7 @@ export async function createFlow(flowCode, {
     context: {
       // Internal state
       __: {
-        lockAddresses: false
+        lockRegistering: false
       },
 
       me: {
@@ -165,8 +166,8 @@ export async function createFlow(flowCode, {
 
     ctx_get(Key, Value) :- prop(context, Top), get_(Top, Key, Value).
 
-    get(Key, Value) :- prop(context, Top), get_(Top, Key, Value).
-    get(Key, Value) :- prop(uiState, Top), get_(Top, Key, Value).
+    get(Key, Value) :- prop(context, Top), get_(Top, Key, Value), !.
+    get(Key, Value) :- prop(uiState, Top), get_(Top, Key, Value), !.
 
     get_(Top, Ns/Key, Value) :-
       !,
