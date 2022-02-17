@@ -1,38 +1,38 @@
-import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
-import { Edge, Elements } from "react-flow-renderer";
 import Moralis from "moralis";
+import { Elements } from "react-flow-renderer";
+import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const Flow = Moralis.Object.extend("Flow");
 
 export type ElementType =
   | "loadABI"
-  | "viewMethods"
   | "nonPayableMethods"
   | "payableMethods"
   | "displayBtn"
-  | "displayText";
+  | "displayText"
+  | "predicate"
+  | "getData"
+  | "callFn";
 
 interface ElementData {
-  id: string;
   type: ElementType;
-  value: any;
-  output_variable?: any;
+  params: string[];
+  inputs: string[];
+  output: string;
 }
 
 interface IFlowSlice {
   elements: Elements;
   data: {
-    elements: { [id: string]: ElementData };
-    edges: { [id: string]: Edge };
+    [id: string]: {
+      [fieldName: string]: any;
+    };
   };
 }
 
 const initialState: IFlowSlice = {
   elements: [],
-  data: {
-    elements: {},
-    edges: {},
-  },
+  data: {},
 };
 
 export const saveFlow = createAsyncThunk(
@@ -52,33 +52,27 @@ const elements = createSlice({
     },
     setElementsData(
       state,
-      action: PayloadAction<{ elements: Elements; data: ElementData }>
+      action: PayloadAction<{
+        id: string;
+        type: string;
+        elements: Elements;
+      }>
     ) {
-      const { elements, data } = action.payload;
-      const { id } = data;
+      const { id, type, elements } = action.payload;
       state.elements = elements;
-      state.data.elements = { ...state.data.elements, [id]: data };
+      state.data = { ...state.data, [id]: { type } };
     },
     updateElementsData(
       state,
-      action: PayloadAction<{ id: string; value: any }>
+      action: PayloadAction<{ id: string; [fieldName: string]: any }>
     ) {
-      const { id, value } = action.payload;
-      const newValue = { ...state.data.elements[id], value } as ElementData;
-      state.data.elements = { ...state.data.elements, [id]: newValue };
-    },
-    setEdgesData(state, action: PayloadAction<{ id: string; edge: Edge }>) {
-      const { id, edge } = action.payload;
-      state.data.edges = { ...state.data.edges, [id]: edge };
+      const { id, ...updatedObj } = action.payload;
+      state.data[id] = { ...state.data[id], ...updatedObj };
     },
   },
 });
 
 const { actions, reducer } = elements;
-export const {
-  setElementsData,
-  setElementsState,
-  updateElementsData,
-  setEdgesData,
-} = actions;
+export const { setElementsData, setElementsState, updateElementsData } =
+  actions;
 export default reducer;

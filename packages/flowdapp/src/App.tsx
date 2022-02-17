@@ -7,7 +7,7 @@ import ReactFlow, {
 } from "react-flow-renderer";
 import { Button } from "primereact/button";
 import { useAppDispatch, useAppSelector } from "./store/store";
-import { saveFlow, setEdgesData, setElementsState } from "./store/slices/flow";
+import { saveFlow, setElementsState } from "./store/slices/flow";
 import AddContractForm from "./components/AddContractForm";
 import SideBar from "./components/SideBar";
 
@@ -21,7 +21,6 @@ const App = () => {
     const id = uuidv4();
     const newEdge = { id, ...params };
     dispatch(setElementsState(addEdge(newEdge, elements)));
-    dispatch(setEdgesData({ id, edge: newEdge }));
   };
 
   const onEdgeUpdate = (oldEdge: any, newConnection: any) =>

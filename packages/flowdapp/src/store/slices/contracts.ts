@@ -1,13 +1,19 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { fetchContractABI } from "../../services/etherscan.service";
+import { ContractMethod } from "../../models/contract-method";
+
+interface ContractMethodMap {
+  [methodName: string]: ContractMethod;
+}
 
 interface IContractSlice {
   [contractAddress: string]: {
     isLoading: boolean;
     methods: {
-      view: any[];
-      payable: any[];
-      nonPayable: any[];
+      map: ContractMethodMap;
+      view: ContractMethod[];
+      payable: ContractMethod[];
+      nonPayable: ContractMethod[];
     };
   };
 }
@@ -19,11 +25,17 @@ export const getContractABI = createAsyncThunk(
   async (address: string) => {
     try {
       const abi = await fetchContractABI(address);
-      let view: any[] = [];
-      let payable: any[] = [];
-      let nonPayable: any[] = [];
+      const map: ContractMethodMap = {};
+      let view: ContractMethod[] = [];
+      let payable: ContractMethod[] = [];
+      let nonPayable: ContractMethod[] = [];
 
-      abi.forEach((fn: any) => {
+      abi.forEach((fn) => {
+        if (fn.type === "constructor") {
+          map[fn.type] = fn;
+        } else {
+          map[fn.name] = fn;
+        }
         if (fn.stateMutability === "view") {
           view.push(fn);
         }
@@ -35,7 +47,7 @@ export const getContractABI = createAsyncThunk(
         }
       });
 
-      return { view, payable, nonPayable };
+      return { map, view, payable, nonPayable };
     } catch (error) {}
   }
 );
@@ -51,6 +63,7 @@ const contracts = createSlice({
         state[address] = {
           isLoading: true,
           methods: {
+            map: {},
             view: [],
             payable: [],
             nonPayable: [],
@@ -60,10 +73,11 @@ const contracts = createSlice({
       .addCase(getContractABI.fulfilled, (state, action) => {
         const address = action.meta.arg;
         if (!action.payload) return;
-        const { view, payable, nonPayable } = action.payload;
+        const { map, view, payable, nonPayable } = action.payload;
         state[address] = {
           isLoading: false,
           methods: {
+            map,
             view,
             payable,
             nonPayable,

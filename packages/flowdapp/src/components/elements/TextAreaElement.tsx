@@ -5,11 +5,12 @@ import { updateElementsData } from "../../store/slices/flow";
 interface TextAreaElementProps {
   id: string;
   label: string;
+  fieldName: string;
 }
 
 const TextAreaElement = (props: TextAreaElementProps) => {
-  const { id, label } = props;
-  const { data } = useAppSelector((store) => store.flow);
+  const { id, label, fieldName } = props;
+  const data = useAppSelector((store) => store.flow.data?.[id]);
   const dispatch = useAppDispatch();
 
   return (
@@ -18,9 +19,9 @@ const TextAreaElement = (props: TextAreaElementProps) => {
       <InputTextarea
         rows={3}
         cols={30}
-        value={data.elements[id]?.value}
+        value={data?.[fieldName]}
         onChange={(e) =>
-          dispatch(updateElementsData({ id, value: e.target.value }))
+          dispatch(updateElementsData({ id, [fieldName]: e.target.value }))
         }
       />
     </div>
