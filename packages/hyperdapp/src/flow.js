@@ -278,7 +278,7 @@ export async function createFlow(flowCode, {
     abi_fn_retmut(X, X, []).
 
 
-    is_mutability(X) :- member(X, [view, payable]).
+    is_mutability(X) :- member(X, [pure, view, payable]).
 
 
     prompt_exists(Query, Ps) :-
