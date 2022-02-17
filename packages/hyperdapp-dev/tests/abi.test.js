@@ -105,6 +105,28 @@ o.spec('ABI helpers', () => {
     ])
   })
 
+  o('array', () => {
+    const result = convertABIToPrologCode([
+      {
+        "inputs": [],
+        "name": "defaultOperators",
+        "outputs": [
+          {
+            "internalType": "address[]",
+            "name": "",
+            "type": "address[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+    ])
+
+    o(result).deepEquals([
+      `defaultOperators: array(address) / view`,
+    ])
+  })
+
   o('tuple param', () => {
     const result = convertABIToPrologCode([
       {

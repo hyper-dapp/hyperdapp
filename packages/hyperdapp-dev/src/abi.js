@@ -36,7 +36,7 @@ export function convertABIToPrologCode(abi) {
       row += ')'
     }
 
-    if (outputs.length) row += `: ${outputs[0].type}`;
+    if (outputs.length) row += `: ${handleArrayType(outputs[0].type)}`;
 
     if (["pure", "view", "payable"].includes(stateMutability)) {
       if (row.indexOf(":") !== -1) row += ` / ${stateMutability}`;
