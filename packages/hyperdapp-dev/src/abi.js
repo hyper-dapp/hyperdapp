@@ -15,7 +15,7 @@ export function convertABIToPrologCode(abi) {
       row += '('
       row += inputs
         .map(input => {
-          let type = input.type
+          let type = handleArrayType(input.type)
 
           if (type === 'tuple') {
             type += '('
@@ -24,7 +24,7 @@ export function convertABIToPrologCode(abi) {
                 if (tupleType.type === 'tuple') {
                   throw new Error('Nested tuples currently not supported')
                 }
-                return tupleType.type
+                return handleArrayType(tupleType.type)
               })
               .join(', ')
             type += ')'
@@ -47,4 +47,11 @@ export function convertABIToPrologCode(abi) {
   }
 
   return code;
+}
+
+function handleArrayType(type) {
+  if (type.slice(type.length - 2) === '[]') {
+    return `array(${type.slice(0, type.length - 2)})`
+  }
+  return type
 }

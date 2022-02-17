@@ -140,7 +140,7 @@ o.spec('ABI helpers', () => {
     ])
 
     o(result).deepEquals([
-      `claim(tuple(bytes32[], uint32, bool))`,
+      `claim(tuple(array(bytes32), uint32, bool))`,
     ])
   })
 
