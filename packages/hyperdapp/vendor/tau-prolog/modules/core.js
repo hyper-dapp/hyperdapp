@@ -3595,7 +3595,7 @@ var pl = {
 			
 			// Number
 			number: function( obj, tobj ) {
-				return new Num( obj, obj % 1 !== 0 );
+				return new Num( obj, obj % 1n !== 0 );
 			},
 			
 			// String

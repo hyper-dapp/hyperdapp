@@ -17,10 +17,18 @@ export async function createFlow(flowCode, {
   const env = {
 
     context: {
+      // Internal state
+      __: {
+        lockAddresses: false
+      },
+
       me: {
-        // Populated via init()
+        // Populated via init/0
         address: null
       },
+
+      // Populated by address/2
+      address: {},
     },
 
     uiState: {},
@@ -39,6 +47,20 @@ export async function createFlow(flowCode, {
       }
       const lastKey = path[path.length-1]
       current[lastKey] = value
+    },
+
+    // For security, we only want to allow specifying addresses before and during init/1.
+    // However, Prolog can asserta/assertz at anytime.
+    // To work around this, we store valid addresses in an external JS object,
+    // then lock writes after a certain point.
+    registerAddress(id, addr) {
+      if (env.context.__.lockAddresses) {
+        throw new Error('[hyperdapp] Addresses locked')
+      }
+      if (env.context.address[id]) {
+        throw new Error(`[hyperdapp] Address already defined: '${id}'`)
+      }
+      env.context.address[id] = addr
     },
 
     async callFn(targetAddress, functionName, mutability, paramTypes, args, returnType, options) {
@@ -131,6 +153,18 @@ export async function createFlow(flowCode, {
       ).
 
 
+    post_init :-
+      current_predicate(address/2),
+      address(Id, Addr),
+      (ground(Id), ground(Addr)) ?? 'address/2 arguments must be ground',
+      apply(registerAddress, [Id, Addr], _).
+
+    %% TODO: Validate function signatures for better dx
+    %% post_init :- abi(id, fns), ...
+
+
+    ctx_get(Key, Value) :- prop(context, Top), get_(Top, Key, Value).
+
     get(Key, Value) :- prop(context, Top), get_(Top, Key, Value).
     get(Key, Value) :- prop(uiState, Top), get_(Top, Key, Value).
 
@@ -162,10 +196,11 @@ export async function createFlow(flowCode, {
       ground(Calldata) ?? 'Calldata must be ground',
       is_list(Result) ?? 'Return value must be a list',
 
-      address(Contract, Addr) ?? 'Contract address not found',
+      ctx_get(address/Contract, Addr) ?? 'Contract address not found',
       abi(Contract, Abi) ?? 'Contract ABI not found',
 
-      Calldata =.. [Fn | Args] ?? 'Invalid Calldata',
+      Calldata =.. [Fn | Args0] ?? 'Invalid Calldata',
+      parse_call_fn_args(Ctx, Args0, Args),
 
       (
         member(X, Abi),
@@ -193,6 +228,20 @@ export async function createFlow(flowCode, {
       parse_call_fn_options(Ctx, Xs, Ys).
 
     parse_call_fn_options(_, [], []).
+
+
+    parse_call_fn_args(Ctx, [X|Xs], [Y|Ys]) :-
+      ground(X) ?? unground_fn_call_arg(X, Ctx),
+      (
+        %% Convert tuple(x,y) to [x, y]
+        %%
+        X =.. [tuple | TupleArgs] ->
+        Y = TupleArgs;
+        Y = X
+      ),
+      parse_call_fn_args(Ctx, Xs, Ys).
+
+    parse_call_fn_args(_, [], []).
 
     %%
     %% Parses our prolog term DSL into function return type and mutability data.
@@ -337,6 +386,10 @@ export async function createFlow(flowCode, {
       for await (let answer of session.promiseAnswers()) {
         // flush
       }
+      await session.promiseQuery(`post_init ?? 'post_init failed'.`)
+      for await (let answer of session.promiseAnswers()) {
+        // flush
+      }
     },
 
     async getPrompts(blockNum) {
@@ -432,10 +485,10 @@ export async function createFlow(flowCode, {
       let answers = []
       for await (let answer of session.promiseAnswers()) {
         // console.log('->>', session.format_answer(answer), answer)
-        console.log('->>', answer)
+        // console.log('->>', answer)
         let result = {}
         for (let variable in answer.links) {
-          // result[variable] = answer.links[variable].toJavaScript({ quoted: true })
+          result[variable] = answer.links[variable].toJavaScript({ quoted: true })
         }
         answers.push(result)
         // console.log(answers[answers.length-1])
