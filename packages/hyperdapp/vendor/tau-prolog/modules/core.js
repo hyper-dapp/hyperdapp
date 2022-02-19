@@ -3595,7 +3595,7 @@ var pl = {
 			
 			// Number
 			number: function( obj, tobj ) {
-				return new Num( obj, obj % 1n !== 0 );
+				return new Num( obj, typeof obj !== 'bigint' && obj % 1 !== 0 );
 			},
 			
 			// String
@@ -6936,6 +6936,19 @@ pl.builtin = new Module("system", {
 		}
 	},
 	
+	"atom_number/2": function( thread, point, atom ) {
+		var atom1 = atom.args[0], num = atom.args[1];
+		if( pl.type.is_variable( atom1 ) && pl.type.is_variable( num ) ) {
+			thread.throw_error( pl.error.instantiation( atom.indicator ) );
+		} else if( !pl.type.is_variable( atom1 ) && !pl.type.is_atom( atom1 ) ) {
+			thread.throw_error( pl.error.type( "atom", atom1, atom.indicator ) );
+		} else if( !pl.type.is_variable( num ) && !pl.type.is_number( num ) ) {
+			thread.throw_error( pl.error.type( "number", num, atom.indicator ) );
+		} else {
+			thread.prepend( [new State( point.goal.replace( new Term( "=", [new Term( num.value.toString() ), atom1] ) ), point.substitution, point )] );
+		}
+	},
+
 	// char_code/2
 	"char_code/2": function( thread, point, atom ) {
 		var char = atom.args[0], code = atom.args[1];

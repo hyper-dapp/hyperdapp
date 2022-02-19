@@ -4,6 +4,7 @@ import isEqual from 'lodash/isEqual.js'
 import { defaultAbiCoder as AbiCoder, Interface } from '@ethersproject/abi'
 import { BN, Account, Address, pubToAddress, toBuffer } from 'ethereumjs-util'
 import { getOpcodesForHF } from '@ethereumjs/vm/dist/evm/opcodes/index.js'
+
 import TX from '@ethereumjs/tx'
 const { Transaction } = TX
 import evm from '@ethereumjs/vm'
@@ -11,7 +12,7 @@ const { default: VM } = evm
 import ejs from '@ethereumjs/common'
 const { default: Common, Chain, Hardfork } = ejs
 
-import { createFlow } from 'hyperdapp'
+import { createFlow, convertEthersContractCallResult } from 'hyperdapp'
 
 let flowsDir = ''
 export function setFlowDir(newDir) {
@@ -95,6 +96,48 @@ export async function createTestFlow(code) {
         else {
           return (await signer.call(...callArgs, value)).returnValue
         }
+      }
+      catch(err) {
+        if (err instanceof EVM.RevertError) {
+          console.log(`Contract reverted: '${err.message}'`)
+          throw err
+        }
+        else {
+          console.log('Unexpected contract call error', err)
+          throw err
+        }
+      }
+    },
+  })
+}
+
+export async function createHardhatFlow(code, { debug, contracts, onCallHttp }={}) {
+  contracts = contracts || []
+
+  return await createFlow(code, {
+
+    onCallHttp,
+
+    async onCallFn({ block, signer, contractAddress, functionSig, args, returnType, value, mutability }) {
+      // TODO: Cache view functions by block
+      const contract = contracts.find(c =>
+        c.address.toLowerCase() === contractAddress.toLowerCase()
+      )
+      if (!contract) {
+        let message = `[createHardhatFlow] No provided contract for address: ${contractAddress}`
+        message += `\nProvided addresses:`
+        message += contracts.map(c => '\n  ' + JSON.stringify(c.address)).join('')
+
+        // TODO: Figure out why async errors don't propagate in Tau
+        console.error(message)
+        throw new Error(message)
+      }
+      try {
+        if (debug) {
+          console.log("onCallFn", functionSig, !!contract.functions[functionSig], args)
+        }
+        const result = await contract.connect(signer).functions[functionSig](...args)
+        return convertEthersContractCallResult(result)
       }
       catch(err) {
         if (err instanceof EVM.RevertError) {

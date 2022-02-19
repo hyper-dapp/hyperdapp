@@ -9,7 +9,7 @@ o.spec('Declarative Helpers', () => {
         throw new Error('Not testing')
       }
     })
-    flow.init({ address: '0x0' })
+    await flow.init({ address: '0x0' })
     return flow
   }
 

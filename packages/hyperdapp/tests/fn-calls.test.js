@@ -2,7 +2,6 @@ import o from 'ospec'
 import { createFlow } from '../index.js'
 
 o.spec('Function calls', () => {
-  o.specTimeout(1000)
 
   async function make(flowCode, onCallFn) {
     const flow = await createFlow(flowCode, { onCallFn })
@@ -25,7 +24,7 @@ o.spec('Function calls', () => {
     o(Out).equals(6n)
   })
 
-  o.only('tuple input', async () => {
+  o('tuple input', async () => {
     let caughtArgs, caughtParamTypes
     const flow = await make(`
         address(foo, '0xfeed').
@@ -34,7 +33,6 @@ o.spec('Function calls', () => {
         ]).
       `,
       async function onCallFn({ args, paramTypes }) {
-        console.log("TYPES", args, paramTypes)
         caughtArgs = args
         caughtParamTypes = paramTypes
         return [args[0][0] + args[0][1]]
