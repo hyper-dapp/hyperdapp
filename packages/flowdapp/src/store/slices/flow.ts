@@ -4,8 +4,6 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const Flow = Moralis.Object.extend("Flow");
 
-export type ElementType = "loadABI" | "prompt";
-
 interface IFlowSlice {
   elements: Elements;
 }

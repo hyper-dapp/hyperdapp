@@ -1,10 +1,10 @@
 import React, { useState } from "react";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
-import { useAppDispatch, useAppSelector } from "../store/store";
-import { getContractABI } from "../store/slices/contracts";
+import { useAppDispatch, useAppSelector } from "../../store/store";
+import { getContractABI } from "../../store/slices/contracts";
 
-const AddContractForm = () => {
+const LoadAbiForm = () => {
   const contracts = useAppSelector((store) => store.contracts);
   const [address, setAddress] = useState("");
   const dispatch = useAppDispatch();
@@ -15,14 +15,14 @@ const AddContractForm = () => {
   };
 
   return (
-    <div className="flex flex-col gap-5">
+    <div className="flex flex-col gap-4">
       <div className="flex flex-row gap-2">
         <InputText
           value={address}
           onChange={(e) => setAddress(e.target.value)}
         />
         <Button
-          label="Load Contract ABI"
+          label="Load ABI"
           icon="pi pi-plus"
           loading={contracts[address]?.isLoading}
           onClick={loadABI}
@@ -39,4 +39,4 @@ const AddContractForm = () => {
   );
 };
 
-export default AddContractForm;
+export default LoadAbiForm;

@@ -3,13 +3,18 @@ import { Handle, Position } from "react-flow-renderer";
 import { MultiSelect } from "primereact/multiselect";
 import { useAppSelector } from "../../store/store";
 
-export default memo(({ data }: any) => {
+interface ILoadAbiData {
+  value: string;
+  onChange(value: Partial<ILoadAbiData>): void;
+}
+
+export default memo(({ data }: { data: ILoadAbiData }) => {
+  const { value, onChange } = data;
   const contracts = useAppSelector((store) => store.contracts);
   const items = Object.keys(contracts).map((address) => ({
     label: address,
     value: address,
   }));
-  const { onChange, value } = data;
 
   return (
     <>

@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useState } from "react";
 import ReactFlow, {
   addEdge,
   Controls,
@@ -11,12 +11,14 @@ import { useAppDispatch, useAppSelector } from "./store/store";
 import { setElementsState } from "./store/slices/flow";
 import LoadAbiNode from "./components/custom-nodes/LoadAbiNode";
 import PromptNode from "./components/custom-nodes/PromptNode";
-import AddContractForm from "./components/AddContractForm";
-import SideBar from "./components/SideBar";
+import BooleanNode from "./components/custom-nodes/BooleanNode";
+import LoadAbiForm from "./components/forms/LoadAbiForm";
+import NodesBar from "./components/NodesBar";
 
 const nodeTypes = {
+  loadAbiNode: LoadAbiNode,
   promptNode: PromptNode,
-  abiNode: LoadAbiNode,
+  booleanNode: BooleanNode,
 };
 
 const App = () => {
@@ -24,12 +26,6 @@ const App = () => {
   const { elements } = useAppSelector((store) => store.flow);
   const [rfInstance, setRfInstance] = useState<any>(null);
   const dispatch = useAppDispatch();
-
-  useEffect(() => {
-    if (rfInstance && elements.length > 0) {
-      rfInstance.fitView();
-    }
-  }, [rfInstance, elements.length]);
 
   const onLoad = useCallback(
     (rfi) => {
@@ -77,26 +73,32 @@ const App = () => {
   );
 
   return (
-    <div className="flex flex-col items-center gap-10 p-10">
-      <div className="flex flex-row gap-6 w-full">
-        <AddContractForm />
-        <div className="flex flex-col gap-4 w-1/2">
-          <div className="border-2 border-black" style={{ height: 500 }}>
-            <ReactFlow
-              elements={elements}
-              nodeTypes={nodeTypes}
-              onElementsRemove={onElementsRemove}
-              onEdgeUpdate={onEdgeUpdate}
-              onConnect={onConnect}
-              onLoad={onLoad}
-              deleteKeyCode={46}
-            >
-              <Controls />
-            </ReactFlow>
+    <div className="container mx-auto p-10 h-screen">
+      <div className="flex flex-col gap-6 h-full">
+        <LoadAbiForm />
+        {Object.keys(contracts).length > 0 && (
+          <div className="flex flex-row justify-between	">
+            <NodesBar />
+            <Button
+              className="p-button-success"
+              label="Save"
+              onClick={onSave}
+            />
           </div>
-          <Button className="p-button-success" label="Save" onClick={onSave} />
+        )}
+        <div className="border-2 border-black h-full">
+          <ReactFlow
+            elements={elements}
+            nodeTypes={nodeTypes}
+            onElementsRemove={onElementsRemove}
+            onEdgeUpdate={onEdgeUpdate}
+            onConnect={onConnect}
+            onLoad={onLoad}
+            deleteKeyCode={46}
+          >
+            <Controls />
+          </ReactFlow>
         </div>
-        {Object.keys(contracts).length > 0 && <SideBar />}
       </div>
     </div>
   );
