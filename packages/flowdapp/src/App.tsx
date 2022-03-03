@@ -1,41 +1,80 @@
 import { v4 as uuidv4 } from "uuid";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   addEdge,
+  Controls,
   removeElements,
   updateEdge,
 } from "react-flow-renderer";
 import { Button } from "primereact/button";
 import { useAppDispatch, useAppSelector } from "./store/store";
-import { saveFlow, setElementsState } from "./store/slices/flow";
+import { setElementsState } from "./store/slices/flow";
+import LoadAbiNode from "./components/custom-nodes/LoadAbiNode";
+import PromptNode from "./components/custom-nodes/PromptNode";
 import AddContractForm from "./components/AddContractForm";
 import SideBar from "./components/SideBar";
 
+const nodeTypes = {
+  promptNode: PromptNode,
+  abiNode: LoadAbiNode,
+};
+
 const App = () => {
-  const { elements, data } = useAppSelector((store) => store.flow);
   const contracts = useAppSelector((store) => store.contracts);
-  const [rfInstance, setRfInstance] = useState<any>();
+  const { elements } = useAppSelector((store) => store.flow);
+  const [rfInstance, setRfInstance] = useState<any>(null);
   const dispatch = useAppDispatch();
 
-  const onConnect = (params: any) => {
-    const id = uuidv4();
-    const newEdge = { id, ...params };
-    dispatch(setElementsState(addEdge(newEdge, elements)));
-  };
+  useEffect(() => {
+    if (rfInstance && elements.length > 0) {
+      rfInstance.fitView();
+    }
+  }, [rfInstance, elements.length]);
 
-  const onEdgeUpdate = (oldEdge: any, newConnection: any) =>
-    dispatch(setElementsState(updateEdge(oldEdge, newConnection, elements)));
-
-  const onElementsRemove = (elementsToRemove: any) =>
-    dispatch(setElementsState(removeElements(elementsToRemove, elements)));
+  const onLoad = useCallback(
+    (rfi) => {
+      if (!rfInstance) {
+        setRfInstance(rfi);
+        console.log("flow loaded:", rfi);
+      }
+    },
+    [rfInstance]
+  );
 
   const onSave = useCallback(() => {
     if (rfInstance) {
       const flow = rfInstance.toObject();
       console.log(flow);
-      dispatch(saveFlow(data));
     }
-  }, [rfInstance, data, dispatch]);
+  }, [rfInstance]);
+
+  const onConnect = useCallback(
+    (params: any) => {
+      const id = uuidv4();
+      const newEdge = {
+        ...params,
+        id,
+        animated: true,
+        style: { stroke: "#555" },
+      };
+      dispatch(setElementsState(addEdge(newEdge, elements)));
+    },
+    [elements, dispatch]
+  );
+
+  const onEdgeUpdate = useCallback(
+    (oldEdge: any, newConnection: any) => {
+      dispatch(setElementsState(updateEdge(oldEdge, newConnection, elements)));
+    },
+    [elements, dispatch]
+  );
+
+  const onElementsRemove = useCallback(
+    (elementsToRemove: any) => {
+      dispatch(setElementsState(removeElements(elementsToRemove, elements)));
+    },
+    [elements, dispatch]
+  );
 
   return (
     <div className="flex flex-col items-center gap-10 p-10">
@@ -45,12 +84,15 @@ const App = () => {
           <div className="border-2 border-black" style={{ height: 500 }}>
             <ReactFlow
               elements={elements}
+              nodeTypes={nodeTypes}
               onElementsRemove={onElementsRemove}
               onEdgeUpdate={onEdgeUpdate}
               onConnect={onConnect}
-              onLoad={setRfInstance}
+              onLoad={onLoad}
               deleteKeyCode={46}
-            />
+            >
+              <Controls />
+            </ReactFlow>
           </div>
           <Button className="p-button-success" label="Save" onClick={onSave} />
         </div>

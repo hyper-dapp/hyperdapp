@@ -4,35 +4,14 @@ import { createAsyncThunk, createSlice, PayloadAction } from "@reduxjs/toolkit";
 
 const Flow = Moralis.Object.extend("Flow");
 
-export type ElementType =
-  | "loadABI"
-  | "nonPayableMethods"
-  | "payableMethods"
-  | "displayBtn"
-  | "displayText"
-  | "predicate"
-  | "getData"
-  | "callFn";
-
-interface ElementData {
-  type: ElementType;
-  params: string[];
-  inputs: string[];
-  output: string;
-}
+export type ElementType = "loadABI" | "prompt";
 
 interface IFlowSlice {
   elements: Elements;
-  data: {
-    [id: string]: {
-      [fieldName: string]: any;
-    };
-  };
 }
 
 const initialState: IFlowSlice = {
   elements: [],
-  data: {},
 };
 
 export const saveFlow = createAsyncThunk(
@@ -50,29 +29,20 @@ const elements = createSlice({
     setElementsState(state, action: PayloadAction<Elements>) {
       state.elements = action.payload;
     },
-    setElementsData(
-      state,
-      action: PayloadAction<{
-        id: string;
-        type: string;
-        elements: Elements;
-      }>
-    ) {
-      const { id, type, elements } = action.payload;
-      state.elements = elements;
-      state.data = { ...state.data, [id]: { type } };
-    },
-    updateElementsData(
-      state,
-      action: PayloadAction<{ id: string; [fieldName: string]: any }>
-    ) {
-      const { id, ...updatedObj } = action.payload;
-      state.data[id] = { ...state.data[id], ...updatedObj };
+    setElementData(state, action: PayloadAction<{ id: string; data: any }>) {
+      const { id, data: newElData } = action.payload;
+      state.elements = state.elements.map((el) => {
+        if (el.id === id) {
+          const { data: oldElData, ...element } = el;
+          const data = { ...oldElData, ...newElData };
+          return { ...element, data };
+        }
+        return el;
+      });
     },
   },
 });
 
 const { actions, reducer } = elements;
-export const { setElementsData, setElementsState, updateElementsData } =
-  actions;
+export const { setElementData, setElementsState } = actions;
 export default reducer;

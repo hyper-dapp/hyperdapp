@@ -10,10 +10,8 @@ interface IContractSlice {
   [contractAddress: string]: {
     isLoading: boolean;
     methods: {
+      arr: ContractMethod[];
       map: ContractMethodMap;
-      view: ContractMethod[];
-      payable: ContractMethod[];
-      nonPayable: ContractMethod[];
     };
   };
 }
@@ -24,30 +22,14 @@ export const getContractABI = createAsyncThunk(
   "contracts/getContractABI",
   async (address: string) => {
     try {
-      const abi = await fetchContractABI(address);
+      const arr = await fetchContractABI(address);
       const map: ContractMethodMap = {};
-      let view: ContractMethod[] = [];
-      let payable: ContractMethod[] = [];
-      let nonPayable: ContractMethod[] = [];
 
-      abi.forEach((fn) => {
-        if (fn.type === "constructor") {
-          map[fn.type] = fn;
-        } else {
-          map[fn.name] = fn;
-        }
-        if (fn.stateMutability === "view") {
-          view.push(fn);
-        }
-        if (fn.stateMutability === "payable") {
-          payable.push(fn);
-        }
-        if (fn.stateMutability === "nonpayable") {
-          nonPayable.push(fn);
-        }
+      arr.forEach((fn) => {
+        map[fn.name] = fn;
       });
 
-      return { map, view, payable, nonPayable };
+      return { arr, map };
     } catch (error) {}
   }
 );
@@ -63,25 +45,18 @@ const contracts = createSlice({
         state[address] = {
           isLoading: true,
           methods: {
+            arr: [],
             map: {},
-            view: [],
-            payable: [],
-            nonPayable: [],
           },
         };
       })
       .addCase(getContractABI.fulfilled, (state, action) => {
-        const address = action.meta.arg;
         if (!action.payload) return;
-        const { map, view, payable, nonPayable } = action.payload;
+        const address = action.meta.arg;
+        const { arr, map } = action.payload;
         state[address] = {
           isLoading: false,
-          methods: {
-            map,
-            view,
-            payable,
-            nonPayable,
-          },
+          methods: { arr, map },
         };
       });
   },
