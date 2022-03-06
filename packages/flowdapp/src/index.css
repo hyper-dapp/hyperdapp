@@ -9,7 +9,6 @@ html {
 body {
   margin: 0;
   height: 100%;
-  padding: 2rem;
   overflow-x: hidden;
   overflow-y: auto;
   background-color: var(--surface-ground);

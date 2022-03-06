@@ -1,5 +1,5 @@
 import { v4 as uuidv4 } from "uuid";
-import React, { useCallback, useState } from "react";
+import React, { Fragment, useCallback, useEffect, useState } from "react";
 import ReactFlow, {
   addEdge,
   Background,
@@ -8,6 +8,8 @@ import ReactFlow, {
   removeElements,
   updateEdge,
 } from "react-flow-renderer";
+import { useMoralis } from "react-moralis";
+import { ToastContainer } from "react-toastify";
 import { Button } from "primereact/button";
 import { useAppDispatch, useAppSelector } from "./store/store";
 import { setElementsState } from "./store/slices/flow";
@@ -16,6 +18,8 @@ import PromptNode from "./components/custom-nodes/PromptNode";
 import BooleanNode from "./components/custom-nodes/BooleanNode";
 import LoadAbiForm from "./components/forms/LoadAbiForm";
 import NodesBar from "./components/NodesBar";
+import Navbar from "./components/NavBar/Navbar";
+import Loader from "./components/Loader";
 
 const nodeTypes = {
   loadAbiNode: LoadAbiNode,
@@ -24,10 +28,18 @@ const nodeTypes = {
 };
 
 const App = () => {
+  const { isWeb3Enabled, isWeb3EnableLoading, enableWeb3 } = useMoralis();
   const contracts = useAppSelector((store) => store.contracts);
   const { elements } = useAppSelector((store) => store.flow);
   const [rfInstance, setRfInstance] = useState<any>(null);
+
   const dispatch = useAppDispatch();
+
+  useEffect(() => {
+    if (!isWeb3Enabled && !isWeb3EnableLoading) {
+      enableWeb3();
+    }
+  }, [isWeb3Enabled, isWeb3EnableLoading, enableWeb3]);
 
   const onLoad = useCallback(
     (rfi) => {
@@ -93,34 +105,57 @@ const App = () => {
   );
 
   return (
-    <div className="container mx-auto p-10 h-screen">
-      <div className="flex flex-col gap-6 h-full">
-        <LoadAbiForm />
-        {Object.keys(contracts).length > 0 && (
-          <div className="flex flex-row justify-between	">
-            <NodesBar />
-            <Button
-              className="p-button-success"
-              label="Save"
-              onClick={onSave}
-            />
+    <div className="flex flex-col h-screen w-full">
+      {!isWeb3Enabled && <Loader />}
+      {isWeb3Enabled && (
+        <Fragment>
+          <Navbar />
+          <div className="container mx-auto p-10 h-full">
+            <div className="flex flex-col flex-auto gap-6 h-full">
+              <LoadAbiForm />
+              {Object.keys(contracts).length > 0 && (
+                <div className="flex flex-row justify-between">
+                  <NodesBar />
+                  <Button
+                    className="p-button-success"
+                    label="Save"
+                    onClick={onSave}
+                  />
+                </div>
+              )}
+              <div className="flex flex-col flex-auto h-full border-2 border-black">
+                <ReactFlow
+                  elements={elements}
+                  nodeTypes={nodeTypes}
+                  onElementsRemove={onElementsRemove}
+                  onEdgeUpdate={onEdgeUpdate}
+                  onConnect={onConnect}
+                  onLoad={onLoad}
+                  panOnScroll={true}
+                >
+                  <Controls />
+                  <Background
+                    variant={BackgroundVariant.Dots}
+                    gap={36}
+                    size={0.5}
+                  />
+                </ReactFlow>
+              </div>
+            </div>
           </div>
-        )}
-        <div className="border-2 border-black h-full">
-          <ReactFlow
-            elements={elements}
-            nodeTypes={nodeTypes}
-            onElementsRemove={onElementsRemove}
-            onEdgeUpdate={onEdgeUpdate}
-            onConnect={onConnect}
-            onLoad={onLoad}
-            panOnScroll={true}
-          >
-            <Controls />
-            <Background variant={BackgroundVariant.Dots} gap={36} size={0.5} />
-          </ReactFlow>
-        </div>
-      </div>
+          <ToastContainer
+            position="bottom-right"
+            autoClose={5000}
+            hideProgressBar={false}
+            newestOnTop={false}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+          />
+        </Fragment>
+      )}
     </div>
   );
 };

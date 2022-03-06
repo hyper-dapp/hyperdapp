@@ -20,9 +20,10 @@ const initialState: IContractSlice = {};
 
 export const getContractABI = createAsyncThunk(
   "contracts/getContractABI",
-  async (address: string) => {
+  async (payload: { chainId: string; address: string }) => {
     try {
-      const arr = await fetchContractABI(address);
+      const { chainId, address } = payload;
+      const arr = await fetchContractABI(chainId, address);
       const map: ContractMethodMap = {};
 
       arr.forEach((fn) => {
@@ -42,7 +43,7 @@ const contracts = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getContractABI.pending, (state, action) => {
-        const address = action.meta.arg;
+        const { address } = action.meta.arg;
         state[address] = {
           isLoading: true,
           methods: {
@@ -53,7 +54,7 @@ const contracts = createSlice({
       })
       .addCase(getContractABI.fulfilled, (state, action) => {
         if (!action.payload) return;
-        const address = action.meta.arg;
+        const { address } = action.meta.arg;
         const { arr, map } = action.payload;
         state[address] = {
           isLoading: false,

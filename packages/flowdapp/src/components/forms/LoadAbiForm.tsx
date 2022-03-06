@@ -1,17 +1,19 @@
 import React, { useState } from "react";
+import { useChain } from "react-moralis";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getContractABI } from "../../store/slices/contracts";
 
 const LoadAbiForm = () => {
+  const { chainId } = useChain();
   const contracts = useAppSelector((store) => store.contracts);
   const [address, setAddress] = useState("");
   const dispatch = useAppDispatch();
 
   const loadABI = async () => {
-    if (!address) return;
-    await dispatch(getContractABI(address));
+    if (!address || !chainId) return;
+    await dispatch(getContractABI({ chainId, address }));
     setAddress("");
   };
 

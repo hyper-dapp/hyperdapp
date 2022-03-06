@@ -3,6 +3,7 @@ import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { MoralisProvider } from "react-moralis";
 import PrimeReact from "primereact/api";
+import "react-toastify/dist/ReactToastify.min.css";
 import "primereact/resources/themes/bootstrap4-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
