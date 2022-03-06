@@ -47,12 +47,32 @@ const App = () => {
   const onConnect = useCallback(
     (params: any) => {
       const id = uuidv4();
-      const newEdge = {
+      let newEdge = {
         ...params,
         id,
         animated: true,
         style: { stroke: "#555" },
       };
+      if (params.sourceHandle === "boolean:true") {
+        newEdge = {
+          ...newEdge,
+          label: "True",
+          labelBgPadding: [8, 4],
+          labelBgBorderRadius: 4,
+          labelBgStyle: { fill: "#D5E8D4", color: "#fff" },
+          arrowHeadType: "arrowclosed",
+        };
+      } else if (params.sourceHandle === "boolean:false") {
+        newEdge = {
+          ...newEdge,
+          label: "False",
+          labelBgPadding: [8, 4],
+          labelBgBorderRadius: 4,
+          labelBgStyle: { fill: "#FFB570", color: "#fff" },
+          arrowHeadType: "arrowclosed",
+        };
+      }
+      console.log(params);
       dispatch(setElementsState(addEdge(newEdge, elements)));
     },
     [elements, dispatch]

@@ -18,6 +18,7 @@ export default memo(({ data }: { data: IBooleanData }) => {
   return (
     <>
       <Handle
+        id="boolean"
         type="target"
         position={Position.Top}
         style={{
@@ -52,7 +53,7 @@ export default memo(({ data }: { data: IBooleanData }) => {
         </div>
       </div>
       <Handle
-        id="a"
+        id="boolean:true"
         type="source"
         position={Position.Bottom}
         style={{
@@ -62,10 +63,9 @@ export default memo(({ data }: { data: IBooleanData }) => {
           left: "30%",
           bottom: "-9px",
         }}
-        onConnect={(params) => console.log("handle onConnect", params)}
       />
       <Handle
-        id="b"
+        id="boolean:false"
         type="source"
         position={Position.Bottom}
         style={{
@@ -75,7 +75,6 @@ export default memo(({ data }: { data: IBooleanData }) => {
           left: "70%",
           bottom: "-9px",
         }}
-        onConnect={(params) => console.log("handle onConnect", params)}
       />
     </>
   );

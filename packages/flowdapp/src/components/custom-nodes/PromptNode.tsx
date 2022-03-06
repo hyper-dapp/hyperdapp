@@ -59,13 +59,14 @@ export default memo(({ data }: { data: IPromptData }) => {
   return (
     <>
       <Handle
+        id="prompt"
         type="target"
-        position={Position.Left}
+        position={Position.Top}
         style={{
           background: "#555",
           height: "18px",
           width: "18px",
-          left: "-9px",
+          top: "-9px",
         }}
         onConnect={(params) => console.log("handle onConnect", params)}
       />
@@ -84,13 +85,14 @@ export default memo(({ data }: { data: IPromptData }) => {
         {content === "text" && textPrompt}
       </div>
       <Handle
+        id={`prompt:${data.content}`}
         type="source"
-        position={Position.Right}
+        position={Position.Bottom}
         style={{
           background: "#555",
           height: "18px",
           width: "18px",
-          right: "-9px",
+          bottom: "-9px",
         }}
         onConnect={(params) => console.log("handle onConnect", params)}
       />

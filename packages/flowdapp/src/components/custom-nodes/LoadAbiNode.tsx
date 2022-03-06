@@ -30,13 +30,14 @@ export default memo(({ data }: { data: ILoadAbiData }) => {
         />
       </div>
       <Handle
+        id="loadAbi"
         type="source"
-        position={Position.Right}
+        position={Position.Bottom}
         style={{
           background: "#555",
           height: "18px",
           width: "18px",
-          right: "-9px",
+          bottom: "-9px",
         }}
         onConnect={(params) => console.log("handle onConnect", params)}
       />
