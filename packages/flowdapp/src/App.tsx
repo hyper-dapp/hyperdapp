@@ -2,6 +2,8 @@ import { v4 as uuidv4 } from "uuid";
 import React, { useCallback, useState } from "react";
 import ReactFlow, {
   addEdge,
+  Background,
+  BackgroundVariant,
   Controls,
   removeElements,
   updateEdge,
@@ -31,7 +33,6 @@ const App = () => {
     (rfi) => {
       if (!rfInstance) {
         setRfInstance(rfi);
-        console.log("flow loaded:", rfi);
       }
     },
     [rfInstance]
@@ -72,7 +73,6 @@ const App = () => {
           arrowHeadType: "arrowclosed",
         };
       }
-      console.log(params);
       dispatch(setElementsState(addEdge(newEdge, elements)));
     },
     [elements, dispatch]
@@ -114,9 +114,10 @@ const App = () => {
             onEdgeUpdate={onEdgeUpdate}
             onConnect={onConnect}
             onLoad={onLoad}
-            deleteKeyCode={46}
+            panOnScroll={true}
           >
             <Controls />
+            <Background variant={BackgroundVariant.Dots} gap={36} size={0.5} />
           </ReactFlow>
         </div>
       </div>

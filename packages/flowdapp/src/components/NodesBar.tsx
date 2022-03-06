@@ -19,54 +19,43 @@ const NodesBar = () => {
   };
 
   const setElementByType = (type: ElementType) => {
-    let element: FlowElement;
-
     const id = uuidv4();
-    const position = { x: 250, y: 25 };
-    const style = {
-      border: "1px solid black",
-      padding: 16,
+    const element: FlowElement = {
+      id,
+      position: { x: 250, y: 25 },
+      style: {
+        border: "1px solid black",
+        padding: 16,
+      },
+      data: {
+        onChange: (data: any) => onChange(id, data),
+      },
     };
 
     switch (type) {
       case ElementType.LOAD_ABI:
-        element = {
-          id,
-          position,
-          style: { ...style, backgroundColor: "#FFFFFF" },
-          type: "loadAbiNode",
-          data: {
-            value: "",
-            onChange: (data: any) => onChange(id, data),
-          },
+        element.type = "loadAbiNode";
+        element.style = { ...element.style, backgroundColor: "#FFFFFF" };
+        element.data = { ...element.data, value: "" };
+        break;
+      case ElementType.BOOLEAN:
+        element.type = "booleanNode";
+        element.style = { ...element.style, backgroundColor: "#D5E8D4" };
+        element.data = {
+          ...element.data,
+          name: "",
+          actions: [],
+          conditions: [],
         };
         break;
       case ElementType.PROMPT:
-        element = {
-          id,
-          position,
-          style: { ...style, backgroundColor: "#DAE8FC" },
-          type: "promptNode",
-          data: {
-            content: "",
-            displayedText: "",
-            actions: [],
-            onChange: (data: any) => onChange(id, data),
-          },
-        };
-        break;
-      case ElementType.BOOLEAN:
-        element = {
-          id,
-          position,
-          style: { ...style, backgroundColor: "#D5E8D4" },
-          type: "booleanNode",
-          data: {
-            name: "",
-            actions: [],
-            conditions: [],
-            onChange: (data: any) => onChange(id, data),
-          },
+        element.type = "promptNode";
+        element.style = { ...element.style, backgroundColor: "#DAE8FC" };
+        element.data = {
+          ...element.data,
+          content: "",
+          displayedText: "",
+          actions: [],
         };
         break;
     }
@@ -83,13 +72,13 @@ const NodesBar = () => {
       />
       <Button
         className="p-button-outlined p-button-secondary"
-        label="Prompt"
-        onClick={() => setElementByType(ElementType.PROMPT)}
+        label="Boolean"
+        onClick={() => setElementByType(ElementType.BOOLEAN)}
       />
       <Button
         className="p-button-outlined p-button-secondary"
-        label="Boolean"
-        onClick={() => setElementByType(ElementType.BOOLEAN)}
+        label="Prompt"
+        onClick={() => setElementByType(ElementType.PROMPT)}
       />
     </div>
   );

@@ -10,6 +10,7 @@ const LoadAbiForm = () => {
   const dispatch = useAppDispatch();
 
   const loadABI = async () => {
+    if (!address) return;
     await dispatch(getContractABI(address));
     setAddress("");
   };
@@ -19,6 +20,7 @@ const LoadAbiForm = () => {
       <div className="flex flex-row gap-2">
         <InputText
           value={address}
+          keyfilter="alphanum"
           onChange={(e) => setAddress(e.target.value)}
         />
         <Button

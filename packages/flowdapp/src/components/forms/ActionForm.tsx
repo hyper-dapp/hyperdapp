@@ -1,6 +1,8 @@
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
+import { TreeSelect } from "primereact/treeselect";
+import TreeNode from "primereact/treenode";
 import { useAppSelector } from "../../store/store";
 
 export type ActionTypes = "call_fn" | "get_ctx" | "set_ctx";
@@ -37,22 +39,66 @@ const ActionForm = (props: IActionFormProps) => {
 
   const callFnItems = useMemo(() => {
     return Object.keys(contracts).map((address) => {
-      const items = contracts[address].methods.arr
+      const view: TreeNode[] = [];
+      const payable: TreeNode[] = [];
+      const nonPayable: TreeNode[] = [];
+
+      contracts[address].methods.arr
         .filter((m) => m.type === "function")
-        .map((method) => {
-          const { name } = method;
-          return {
-            label: name,
-            value: `${address},${name}`,
+        .forEach((fn: any) => {
+          const item: TreeNode = {
+            key: "",
+            label: fn.name,
+            selectable: true,
           };
+          if (fn.stateMutability === "view") {
+            item.key = `${address},${fn.name}`;
+            view.push(item);
+          }
+          if (fn.stateMutability === "payable") {
+            item.key = `${address},${fn.name}`;
+            payable.push(item);
+          }
+          if (fn.stateMutability === "nonpayable") {
+            item.key = `${address},${fn.name}`;
+            nonPayable.push(item);
+          }
         });
-      return { label: address, items };
+
+      return {
+        key: address,
+        label: address,
+        selectable: false,
+        children: [
+          {
+            key: "read",
+            label: "Read",
+            selectable: false,
+            children: view,
+          },
+          {
+            key: "write",
+            label: "Write",
+            selectable: false,
+            children: [
+              {
+                key: `payable`,
+                label: "Payable",
+                selectable: false,
+                children: payable,
+              },
+              {
+                key: `nonpayable`,
+                label: "Non Payable",
+                selectable: false,
+                children: nonPayable,
+              },
+            ],
+          },
+        ],
+      };
     });
   }, [contracts]);
-
-  const groupedItemTemplate = (option: any) => {
-    return <div className="bg-gray-200 font-bold">{option.label}</div>;
-  };
 
   const fnForm = (callFn: string) => {
     const [address, name] = callFn.split(",");
@@ -166,12 +212,18 @@ const ActionForm = (props: IActionFormProps) => {
   const callFnForm = (
     <div className="flex flex-row gap-4">
       <div className="flex flex-col gap-1">
-        <p className="font-bold">Function Name</p>
-        <Dropdown
+        <p className="font-bold">Function</p>
+        <TreeSelect
           value={props.action.callFn}
           options={callFnItems}
+          placeholder="Select Function"
+          selectionMode="single"
+          filterPlaceholder="Search..."
+          resetFilterOnHide
+          filter
           onChange={(e) => {
-            const [address, name] = e.value.split(",");
+            const callFn = e.value as string;
+            const [address, name] = callFn.split(",");
             const method = contracts[address].methods.map[name];
             const { stateMutability, inputs, outputs } = method;
 
@@ -180,15 +232,11 @@ const ActionForm = (props: IActionFormProps) => {
 
             props.onChange({
               ...props.action,
-              callFn: e.value,
+              callFn,
               inputs: new Array(inputsLength),
               ...(outputs.length > 0 && { output: "" }),
             });
           }}
-          optionLabel="label"
-          optionGroupLabel="label"
-          optionGroupChildren="items"
-          optionGroupTemplate={groupedItemTemplate}
         />
       </div>
       {props.action.callFn && fnForm(props.action.callFn)}

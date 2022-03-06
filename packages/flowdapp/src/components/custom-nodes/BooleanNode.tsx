@@ -1,5 +1,5 @@
-import React, { memo } from "react";
-import { Handle, Position } from "react-flow-renderer";
+import React, { FC, memo } from "react";
+import { Handle, NodeProps, Position } from "react-flow-renderer";
 import { InputText } from "primereact/inputtext";
 import { IActionFormData } from "../forms/ActionForm";
 import ActionsListForm from "../forms/ActionsListForm";
@@ -12,7 +12,7 @@ interface IBooleanData {
   onChange(value: Partial<IBooleanData>): void;
 }
 
-export default memo(({ data }: { data: IBooleanData }) => {
+const BooleanNode: FC<NodeProps> = ({ data }: { data: IBooleanData }) => {
   const { name, actions, conditions, onChange } = data;
 
   return (
@@ -27,14 +27,13 @@ export default memo(({ data }: { data: IBooleanData }) => {
           width: "18px",
           top: "-9px",
         }}
-        onConnect={(params) => console.log("handle onConnect", params)}
       />
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
           <p className="font-bold">Block Name</p>
           <InputText
             className="block"
-            placeholder="is_owner"
+            placeholder="E.g. is_owner"
             value={name}
             onChange={(e) => onChange({ name: e.target.value })}
           />
@@ -78,4 +77,6 @@ export default memo(({ data }: { data: IBooleanData }) => {
       />
     </>
   );
-});
+};
+
+export default memo(BooleanNode);

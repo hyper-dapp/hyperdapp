@@ -26,7 +26,8 @@ export const getContractABI = createAsyncThunk(
       const map: ContractMethodMap = {};
 
       arr.forEach((fn) => {
-        map[fn.name] = fn;
+        const key = fn.type !== "constructor" ? fn.name : "constructor";
+        map[key] = fn;
       });
 
       return { arr, map };

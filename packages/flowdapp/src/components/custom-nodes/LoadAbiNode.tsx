@@ -1,5 +1,5 @@
-import React, { memo } from "react";
-import { Handle, Position } from "react-flow-renderer";
+import React, { FC, memo } from "react";
+import { Handle, NodeProps, Position } from "react-flow-renderer";
 import { MultiSelect } from "primereact/multiselect";
 import { useAppSelector } from "../../store/store";
 
@@ -8,7 +8,7 @@ interface ILoadAbiData {
   onChange(value: Partial<ILoadAbiData>): void;
 }
 
-export default memo(({ data }: { data: ILoadAbiData }) => {
+const LoadAbiNode: FC<NodeProps> = ({ data }: { data: ILoadAbiData }) => {
   const { value, onChange } = data;
   const contracts = useAppSelector((store) => store.contracts);
   const items = Object.keys(contracts).map((address) => ({
@@ -39,8 +39,9 @@ export default memo(({ data }: { data: ILoadAbiData }) => {
           width: "18px",
           bottom: "-9px",
         }}
-        onConnect={(params) => console.log("handle onConnect", params)}
       />
     </>
   );
-});
+};
+
+export default memo(LoadAbiNode);

@@ -2,7 +2,8 @@ import React from "react";
 import ReactDOM from "react-dom";
 import { Provider } from "react-redux";
 import { MoralisProvider } from "react-moralis";
-import "primereact/resources/themes/lara-light-indigo/theme.css";
+import PrimeReact from "primereact/api";
+import "primereact/resources/themes/bootstrap4-light-blue/theme.css";
 import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "./index.css";
@@ -12,6 +13,8 @@ import reportWebVitals from "./reportWebVitals";
 
 const appId = process.env.REACT_APP_MORALIS_APPLICATION_ID as string;
 const serverUrl = process.env.REACT_APP_MORALIS_SERVER_URL as string;
+
+PrimeReact.appendTo = "self";
 
 ReactDOM.render(
   <React.StrictMode>

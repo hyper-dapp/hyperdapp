@@ -1,5 +1,5 @@
-import React, { memo } from "react";
-import { Handle, Position } from "react-flow-renderer";
+import React, { FC, memo } from "react";
+import { Handle, NodeProps, Position } from "react-flow-renderer";
 import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { IActionFormData } from "../forms/ActionForm";
@@ -23,7 +23,7 @@ interface IPromptData {
   onChange(value: Partial<IPromptData>): void;
 }
 
-export default memo(({ data }: { data: IPromptData }) => {
+const PromptNode: FC<NodeProps> = ({ data }: { data: IPromptData }) => {
   const { content, displayedText, actions, onChange } = data;
 
   const buttonPrompt = (
@@ -68,7 +68,6 @@ export default memo(({ data }: { data: IPromptData }) => {
           width: "18px",
           top: "-9px",
         }}
-        onConnect={(params) => console.log("handle onConnect", params)}
       />
       <div className="flex flex-col gap-4">
         <div className="flex flex-col gap-1">
@@ -94,8 +93,9 @@ export default memo(({ data }: { data: IPromptData }) => {
           width: "18px",
           bottom: "-9px",
         }}
-        onConnect={(params) => console.log("handle onConnect", params)}
       />
     </>
   );
-});
+};
+
+export default memo(PromptNode);
