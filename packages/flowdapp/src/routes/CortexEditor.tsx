@@ -95,25 +95,40 @@ const CortexEditor = () => {
   return (
     <div className="flex flex-col flex-auto gap-6 h-full">
       {Object.keys(contracts).length > 0 && (
-        <div className="flex flex-row justify-between">
-          <NodesBar />
-          <Button className="p-button-success" label="Save" onClick={onSave} />
-        </div>
+        <>
+          <div className="flex flex-row justify-between">
+            <NodesBar />
+            <Button
+              className="p-button-success"
+              label="Save"
+              onClick={onSave}
+            />
+          </div>
+          <div className="flex flex-col flex-auto h-full border-2 border-black">
+            <ReactFlow
+              elements={elements}
+              nodeTypes={nodeTypes}
+              onElementsRemove={onElementsRemove}
+              onEdgeUpdate={onEdgeUpdate}
+              onConnect={onConnect}
+              onLoad={onLoad}
+              panOnScroll={true}
+            >
+              <Controls />
+              <Background
+                variant={BackgroundVariant.Dots}
+                gap={36}
+                size={0.5}
+              />
+            </ReactFlow>
+          </div>
+        </>
       )}
-      <div className="flex flex-col flex-auto h-full border-2 border-black">
-        <ReactFlow
-          elements={elements}
-          nodeTypes={nodeTypes}
-          onElementsRemove={onElementsRemove}
-          onEdgeUpdate={onEdgeUpdate}
-          onConnect={onConnect}
-          onLoad={onLoad}
-          panOnScroll={true}
-        >
-          <Controls />
-          <Background variant={BackgroundVariant.Dots} gap={36} size={0.5} />
-        </ReactFlow>
-      </div>
+      {Object.keys(contracts).length === 0 && (
+        <p className="text-xl">
+          No ABIs detected! You must load at least one ABI first!
+        </p>
+      )}
     </div>
   );
 };
