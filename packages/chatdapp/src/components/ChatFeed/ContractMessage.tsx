@@ -46,37 +46,35 @@ const ContractMessage = () => {
           })
         );
         const prompts = await flow.getPrompts(100);
-        prompts.map((row: string[][]) => {
-          return row.map(([type, ...args]: string[]) => {
-            if (type === "text") {
-              return dispatch(
-                sendMessage({
-                  chatId: contractId,
-                  from: contractId,
-                  message_type: "text",
-                  message: args.map(unescapeString).join(""),
-                })
-              );
-            } else if (type === "button") {
-              return dispatch(
-                sendMessage({
-                  chatId: contractId,
-                  from: contractId,
-                  message_type: "button",
-                  message: args,
-                })
-              );
-            } else {
-              return dispatch(
-                sendMessage({
-                  chatId: contractId,
-                  from: contractId,
-                  message_type: "text",
-                  message: `Unrecognized prompt type: ${type}`,
-                })
-              );
-            }
-          });
+        prompts.map(([type, ...args]: string[]) => {
+          if (type === "text") {
+            return dispatch(
+              sendMessage({
+                chatId: contractId,
+                from: contractId,
+                message_type: "text",
+                message: args.map(unescapeString).join(""),
+              })
+            );
+          } else if (type === "button") {
+            return dispatch(
+              sendMessage({
+                chatId: contractId,
+                from: contractId,
+                message_type: "button",
+                message: args,
+              })
+            );
+          } else {
+            return dispatch(
+              sendMessage({
+                chatId: contractId,
+                from: contractId,
+                message_type: "text",
+                message: `Unrecognized prompt type: ${type}`,
+              })
+            );
+          }
         });
         console.log("Prompts:", prompts);
       } catch (err: any) {

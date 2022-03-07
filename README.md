@@ -5,10 +5,10 @@
 
 ```
 $ yarn global add http-server
-$ http-server packages/hyperdapp
+$ http-server packages/hyperdapp-dev
 ```
 
-Now visit [localhost:8080](http://localhost:8080/)
+Now visit [localhost:8080/repl](http://localhost:8080/repl)
 
 ## Development
 
