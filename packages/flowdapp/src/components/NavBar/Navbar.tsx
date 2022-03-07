@@ -16,7 +16,13 @@ const Navbar = () => {
 
   const rightContent = <WalletBtn />;
 
-  return <Toolbar left={leftContent} right={rightContent} />;
+  return (
+    <Toolbar
+      className="rounded-none border-t-0 border-r-0 border-l-0 border-gray-300 bg-gray-200"
+      left={leftContent}
+      right={rightContent}
+    />
+  );
 };
 
 export default Navbar;
