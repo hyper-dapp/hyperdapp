@@ -1,5 +1,6 @@
 import React from "react";
 import ReactDOM from "react-dom";
+import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { MoralisProvider } from "react-moralis";
 import PrimeReact from "primereact/api";
@@ -9,6 +10,8 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "./index.css";
 import store from "./store/store";
+import ContractABIs from "./routes/ContractABIs";
+import CortexEditor from "./routes/CortexEditor";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
 
@@ -21,7 +24,15 @@ ReactDOM.render(
   <React.StrictMode>
     <MoralisProvider appId={appId} serverUrl={serverUrl}>
       <Provider store={store}>
-        <App />
+        <BrowserRouter>
+          <Routes>
+            <Route element={<App />}>
+              <Route path="/cortex/abi" element={<ContractABIs />} />
+              <Route path="/cortex/editor" element={<CortexEditor />} />
+              <Route path="/" element={<Navigate to="/cortex/editor" />} />
+            </Route>
+          </Routes>
+        </BrowserRouter>
       </Provider>
     </MoralisProvider>
   </React.StrictMode>,

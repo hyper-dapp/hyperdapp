@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { Handle, NodeProps, Position } from "react-flow-renderer";
 import { InputText } from "primereact/inputtext";
 import { IActionFormData } from "../forms/ActionForm";

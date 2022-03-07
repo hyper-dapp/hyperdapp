@@ -1,4 +1,4 @@
-import { Fragment, useCallback, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { useMoralis, useChain } from "react-moralis";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
@@ -37,7 +37,7 @@ const WalletBtn = () => {
   };
 
   return (
-    <Fragment>
+    <>
       <Button
         className="p-button-outlined p-button-rounded"
         icon="pi pi-wallet"
@@ -72,7 +72,7 @@ const WalletBtn = () => {
           </div>
         </Card>
       </Dialog>
-    </Fragment>
+    </>
   );
 };
 

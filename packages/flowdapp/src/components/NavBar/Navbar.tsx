@@ -3,15 +3,13 @@ import WalletBtn from "./WalletBtn";
 
 const Navbar = () => {
   const leftContent = (
-    <div className="flex flex-row items-center justify-center h-12 w-full">
-      <img
-        src="/images/hyperdapp-logo.png"
-        width="170"
-        height="70"
-        className="d-inline-block align-top"
-        alt="HyperDapp"
-      />
-    </div>
+    <img
+      src="/images/hyperdapp-logo.png"
+      width="170"
+      height="70"
+      className="d-inline-block align-top"
+      alt="HyperDapp"
+    />
   );
 
   const rightContent = <WalletBtn />;

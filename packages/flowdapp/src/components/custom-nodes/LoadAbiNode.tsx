@@ -1,4 +1,4 @@
-import React, { FC, memo } from "react";
+import { FC, memo } from "react";
 import { Handle, NodeProps, Position } from "react-flow-renderer";
 import { MultiSelect } from "primereact/multiselect";
 import { useAppSelector } from "../../store/store";

@@ -9,6 +9,7 @@ interface ContractMethodMap {
 interface IContractSlice {
   [contractAddress: string]: {
     isLoading: boolean;
+    name: string;
     methods: {
       arr: ContractMethod[];
       map: ContractMethodMap;
@@ -20,7 +21,7 @@ const initialState: IContractSlice = {};
 
 export const getContractABI = createAsyncThunk(
   "contracts/getContractABI",
-  async (payload: { chainId: string; address: string }) => {
+  async (payload: { chainId: string; name: string; address: string }) => {
     try {
       const { chainId, address } = payload;
       const arr = await fetchContractABI(chainId, address);
@@ -43,22 +44,21 @@ const contracts = createSlice({
   extraReducers: (builder) => {
     builder
       .addCase(getContractABI.pending, (state, action) => {
-        const { address } = action.meta.arg;
+        const { name, address } = action.meta.arg;
         state[address] = {
           isLoading: true,
-          methods: {
-            arr: [],
-            map: {},
-          },
+          methods: { arr: [], map: {} },
+          name,
         };
       })
       .addCase(getContractABI.fulfilled, (state, action) => {
         if (!action.payload) return;
-        const { address } = action.meta.arg;
+        const { name, address } = action.meta.arg;
         const { arr, map } = action.payload;
         state[address] = {
           isLoading: false,
           methods: { arr, map },
+          name,
         };
       });
   },
