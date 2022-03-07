@@ -32,48 +32,52 @@ init :-
     set(tab, student)
   }.
 
-prompt([ text('You are staff')     ]) :- is_staff(true).
-prompt([ text('You are not staff') ]) :- is_staff(false).
+prompt :- is_staff(true),  show text('You are staff').
+prompt :- is_staff(false), show text('You are not staff').
 
 %%
 %% Choose tab
 %%
-prompt([
-  text('What kind of action do you want to take?'),
-  button('Student', [ set(tab, student) ])
-]) :-
-  get(tab, choose).
+prompt :-
+  get(tab, choose),
+  show [
+    text('What kind of action do you want to take?'),
+    button('Student', [ set(tab, student) ])
+  ].
 
-prompt([ button('Staff', [ set(tab, staff) ]) ]) :- get(tab, choose).
-prompt([ button('Admin', [ set(tab, admin) ]) ]) :- get(tab, choose).
+prompt :- get(tab, choose), show button('Staff', [ set(tab, staff) ]).
+prompt :- get(tab, choose), show button('Admin', [ set(tab, admin) ]).
 
 %%
 %% Student tab
 %%
-prompt([ text('Welcome to Shipyard\'s Tuition Portal') ]) :- get(tab, student), prompt_once(welcome).
-prompt([
-  button('Pay Deposit', [
+prompt :-
+  get(tab, student),
+  student_prompt.
+
+student_prompt :-
+  prompt_once(welcome),
+  show text('Welcome to Shipyard\'s Tuition Portal').
+
+student_prompt :-
+  has_paid(false),
+  show button('Pay Deposit', [
     call_fn(tuition, contribute, [], [value(eth(1))])
-  ])
-]) :-
-  get(tab, student),
-  has_paid(false).
+  ]).
 
-prompt([
-  text('Congratulations! Your deposit has been registered.')
-]) :-
-  get(tab, student),
-  has_paid(true).
+student_prompt :-
+  has_paid(true),
+  show text('Congratulations! Your deposit has been registered.').
 
 %%
 %% Staff Tab
 %%
-prompt([ text('Staff (TODO)') ]) :- get(tab, staff).
+prompt :- get(tab, staff), show text('Staff (TODO)').
 
 %%
 %% Staff Tab
 %%
-prompt([ text('Admin (TODO)') ]) :- get(tab, admin).
+prompt :- get(tab, admin), show text('Admin (TODO)').
 
 %%
 %% Helpers
@@ -93,10 +97,8 @@ is_owner(Bool) :-
 
 
 % For testing
-prompt(Actions) :- findall(Action, action(Action), Actions).
-action(
-  button('Owner', [
+prompt :-
+  show button('Owner', [
     call_fn(tuition, owner, [Addr]),
     log_message(text('Owner address: ', Addr))
-  ])
-).
+  ]).

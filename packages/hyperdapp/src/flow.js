@@ -202,7 +202,10 @@ export async function createFlow(flowCode, {
           prompts.push(serializeNonJsonValues(prompt))
           // console.log(prompts[prompts.length-1])
         }
-        return prompts
+        if (prompts.length >= 2) {
+          console.warn('Multiple prompt_list answers')
+        }
+        return prompts[0]
       }
     )),
 
@@ -213,7 +216,7 @@ export async function createFlow(flowCode, {
         const selectQuery = selectVariable
           ? `, (term_to_list(${selectVariable}, ${selectVariable}Out) -> true; ${selectVariable}Out = ${selectVariable})`
           : ''
-        await session.promiseQuery(`prompt(Prompt), prompt_exists(${matchQuery}, Prompt)${selectQuery}.`)
+        await session.promiseQuery(`prompt([], Prompt), prompt_exists(${matchQuery}, Prompt)${selectQuery}.`)
 
         let answers = []
         for await (let answer of session.promiseAnswers()) {

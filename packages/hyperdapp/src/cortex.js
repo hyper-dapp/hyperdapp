@@ -19,9 +19,14 @@ export const CORTEX_BASE_CODE = `
 :- op(985, yfx, else).
 :- op(985, yfx, elseif).
 :- op(990, fx, if).
+:- op(997, fx, show).
 
+%% Useful helper for assert + error messages
 '??'(Pred, Err) :- Pred -> true; throw(assert_error(Err)).
 
+%%
+%% DSL: if-then-else, or
+%%
 if(X) :- (if_then(X, Then) -> if_call(Then); true).
 
 if_then(then(elseif(Try, Cond), MaybeThen), Then) :-
@@ -40,8 +45,10 @@ if_call(Terms)   :- call(Terms).
 or(X,Y) :- call(X) -> true; call(Y).
 
 prompt_list(Out) :-
-  prompt(Prompt),
-  terms_to_list(Prompt, Out).
+  findall(Prompt, prompt([], Prompt), PromptLists),
+  foldl(append, PromptLists, [], Prompts0),
+  reverse(Prompts0, Prompts),
+  terms_to_list(Prompts, Out).
 
 
 prompt_once(Key) :-
@@ -324,6 +331,8 @@ list_to_terms([[Atom|Args0] | Ys], [X | Xs]) :-
 list_to_terms([], []).
 
 
+ends_with(Ending, Atom) :- atom_concat(_, Ending, Atom).
+
 %%
 %% Execution and effects
 %%
@@ -347,4 +356,61 @@ execute_all_([]).
 
 log_message(Term) :-
   assertz(effect(log_message(Term))).
+
+
+%%
+%% DSL: Transforms prompt / show(X) to prompt(In,Out) / show(X,A,B)
+%%
+%% We define the term_expansion down here so Tau doesn't attempt to expand the above code.
+%%
+
+%% Append a prompt to a list of results.
+%% Normalize lists, maintaining reverse order.
+%%
+show([], In, In) :-
+  !.
+show([P | Ps], In, Results) :-
+  !,
+  show(Ps, [P | In], Results).
+show(P, In, [P | In]).
+
+
+%% Boilerplate iteration
+%%
+prompts_expansion(CurrentVar, ResultVar, (G0, Gs0), (G, Gs)) :-
+  !,
+  prompt_expansion(CurrentVar, NextVar, G0, G),
+  prompts_expansion(NextVar, ResultVar, Gs0, Gs).
+
+prompts_expansion(CurrentVar, ResultVar, G0, G) :-
+  prompt_expansion(CurrentVar, ResultVar, G0, G).
+
+
+%% Expand show/1 and any predicates that end with _prompt
+%%
+prompt_expansion(CurrentVar, NextVar, show(Prompt), show(Prompt, CurrentVar, NextVar)) :- !.
+
+prompt_expansion(CurrentVar, NextVar, Goal0, Goal) :-
+  Goal0 =.. [Name | Args0],
+  ends_with('_prompt', Name),
+  !,
+  append(Args0, [CurrentVar, NextVar], Args),
+  Goal =.. [Name | Args].
+
+prompt_expansion(CurrentVar, CurrentVar, X, X).
+
+
+%% The actual term expansion definition.
+%% Prolog will attempt to expand every rule using these patterns.
+%%
+term_expansion((prompt :- RawBody), (prompt(In, Out) :- Body)) :-
+  prompts_expansion(In, Out, RawBody, Body).
+
+term_expansion((Helper :- RawBody), (HelperTransformed :- Body)) :-
+  Helper =.. [Name | Args0],
+  ends_with('_prompt', Name),
+  prompts_expansion(In, Out, RawBody, Body),
+  append(Args0, [In, Out], Args),
+  HelperTransformed =.. [Name | Args].
+
 `
