@@ -5,7 +5,7 @@ export interface MethodPayload {
   type: "address" | "bytes" | "uint8" | "uint256" | "eth";
 }
 
-export interface ContractMethod {
+export interface ContractMethodModels {
   constant: boolean;
   inputs: MethodPayload[];
   name: string;

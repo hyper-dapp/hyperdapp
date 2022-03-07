@@ -39,7 +39,6 @@ const ContractABIs = () => {
             <InputText
               value={data.name}
               placeholder="E.g. BAYC"
-              keyfilter="alphanum"
               onChange={(e) =>
                 setData((val) => ({ ...val, name: e.target.value }))
               }
@@ -63,7 +62,7 @@ const ContractABIs = () => {
             onClick={loadABI}
           />
         </div>
-        <DataTable value={contractsList} responsiveLayout="scroll">
+        <DataTable value={contractsList} scrollable scrollHeight="450px">
           <Column field="name" header="Name" />
           <Column field="address" header="Address" />
         </DataTable>

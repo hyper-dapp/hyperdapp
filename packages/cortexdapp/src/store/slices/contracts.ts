@@ -1,9 +1,9 @@
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import { fetchContractABI } from "../../services/etherscan.service";
-import { ContractMethod } from "../../models/contract-method";
+import { ContractMethodModels } from "../../models/contract-method.models";
 
 interface ContractMethodMap {
-  [methodName: string]: ContractMethod;
+  [methodName: string]: ContractMethodModels;
 }
 
 interface IContractSlice {
@@ -11,7 +11,7 @@ interface IContractSlice {
     isLoading: boolean;
     name: string;
     methods: {
-      arr: ContractMethod[];
+      arr: ContractMethodModels[];
       map: ContractMethodMap;
     };
   };

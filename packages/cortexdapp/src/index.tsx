@@ -14,6 +14,7 @@ import ContractABIs from "./routes/ContractABIs";
 import CortexEditor from "./routes/CortexEditor";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
+import ContextVariables from "./routes/ContextVariables";
 
 const appId = process.env.REACT_APP_MORALIS_APPLICATION_ID as string;
 const serverUrl = process.env.REACT_APP_MORALIS_SERVER_URL as string;
@@ -29,6 +30,7 @@ ReactDOM.render(
             <Route element={<App />}>
               <Route path="/cortex/abi" element={<ContractABIs />} />
               <Route path="/cortex/editor" element={<CortexEditor />} />
+              <Route path="/cortex/variables" element={<ContextVariables />} />
               <Route path="/" element={<Navigate to="/cortex/editor" />} />
             </Route>
           </Routes>

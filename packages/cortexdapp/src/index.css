@@ -10,7 +10,7 @@ body {
   margin: 0;
   height: 100%;
   overflow-x: hidden;
-  overflow-y: auto;
+  overflow-y: hidden;
   background-color: var(--surface-ground);
   font-family: var(--font-family);
   font-weight: normal;
