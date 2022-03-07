@@ -12,7 +12,7 @@
 </div>
 
 <script type="module">
-import { createFlow, unescapeString } from '../index.js'
+import { createFlow, unescapeString } from '../node_modules/hyperdapp/index.js'
 import { ethers } from '../node_modules/ethers/dist/ethers.esm.min.js'
 import { html } from 'https://unpkg.com/lighterhtml@4.2.0/esm/index.js?module'
 
@@ -23,7 +23,7 @@ const signer = provider.getSigner()
 
 async function init() {
   const code = codeInput.value || (
-    await (await fetch('/tests/integration/tuition-contract.pl')).text()
+    await (await fetch('../node_modules/hyperdapp/tests/integration/tuition-contract.pl')).text()
   ).replace(`{{contractAddr}}`, '0x3C1F9d85d20bCDBafc35c81898b95025576819E6')
 
   if (!codeInput.value) {
@@ -32,8 +32,6 @@ async function init() {
 
   const flow = await createFlow(code, {
     async onCallFn({ block, signer, contractAddress, functionSig, paramTypes, args, returnType, value, mutability }) {
-      console.log("onCallFn", contractAddress, functionSig, args, block)
-
       const cacheKey = functionSig + (
         paramTypes.length == 0
         ? ''
@@ -42,9 +40,10 @@ async function init() {
 
       // TODO: Handle more cases
       if (mutability.view && block.cache[cacheKey]) {
-        // console.log("Cache hit", block.cache[cacheKey])
+        console.log("onCallFn (cache hit)", functionSig, contractAddress)
         return block.cache[cacheKey]
       }
+      console.log("onCallFn", functionSig, args, block, contractAddress)
 
       const returns = returnType.length
         ? ` ${mutability.view ? 'view ' : ''}returns (${returnType.join(',')})`
@@ -95,32 +94,28 @@ async function render() {
   }
 
   let resultDiv = html.node`<div class="prompt-set"></div>`
-  for (let row of prompts) {
-    let rowDiv = html.node`<div></div>`
-    for (let [type, ...args] of row) {
-      if (type === 'text') {
-        rowDiv.appendChild(html.node`
-          <p>${args.map(unescapeString).join('')}</p>
-        `)
-      }
-      else if (type === 'button') {
-        const [buttonText, action] = args
-        rowDiv.appendChild(html.node`
-          <button
-            onclick=${() => executeButtonAction(action)}
-            class="p-2 bg-violet-600 text-white disabled:bg-gray-400"
-          >
-            ${unescapeString(buttonText)}
-          </button>
-        `)
-      }
-      else {
-        rowDiv.appendChild(html.node`
-          <div>Unrecognized prompt type: ${type}</div>
-        `)
-      }
+  for (let [type, ...args] of prompts) {
+    if (type === 'text') {
+      resultDiv.appendChild(html.node`
+        <p>${args.map(unescapeString).join('')}</p>
+      `)
     }
-    resultDiv.appendChild(rowDiv)
+    else if (type === 'button') {
+      const [buttonText, action] = args
+      resultDiv.appendChild(html.node`
+        <button
+          onclick=${() => executeButtonAction(action)}
+          class="p-2 bg-violet-600 text-white disabled:bg-gray-400"
+        >
+          ${unescapeString(buttonText)}
+        </button>
+      `)
+    }
+    else {
+      resultDiv.appendChild(html.node`
+        <div>Unrecognized prompt type: ${type}</div>
+      `)
+    }
   }
   flowDom.appendChild(resultDiv)
 }
