@@ -419,7 +419,9 @@ export default function( pl ) {
 
 		// toString
 		pl.type.JSValue.prototype.toString = function() {
-			return "<javascript>(" + (typeof this.value).toLowerCase() + ")";
+			return typeof this.value === 'object'
+			? `<javascript>(${JSON.stringify(this.value)})`
+			: "<javascript>(" + (typeof this.value).toLowerCase() + ")";
 		};
 
 		// clone
