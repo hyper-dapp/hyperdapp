@@ -31,7 +31,6 @@ const PromptNode: FC<NodeProps> = ({ data }: { data: IPromptData }) => {
       <div className="flex flex-col gap-1">
         <p className="font-bold">Button Text</p>
         <InputText
-          className="block"
           placeholder="E.g. Mint"
           value={displayedText}
           onChange={(e) => onChange({ displayedText: e.target.value })}
@@ -48,7 +47,6 @@ const PromptNode: FC<NodeProps> = ({ data }: { data: IPromptData }) => {
     <div className="flex flex-col gap-1">
       <p className="font-bold">Displayed Text</p>
       <InputText
-        className="block"
         placeholder="E.g. Welcome to HyperDapp!"
         value={displayedText}
         onChange={(e) => onChange({ displayedText: e.target.value })}

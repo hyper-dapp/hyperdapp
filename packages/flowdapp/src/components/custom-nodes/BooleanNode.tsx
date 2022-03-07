@@ -32,7 +32,6 @@ const BooleanNode: FC<NodeProps> = ({ data }: { data: IBooleanData }) => {
         <div className="flex flex-col gap-1">
           <p className="font-bold">Block Name</p>
           <InputText
-            className="block"
             placeholder="E.g. is_owner"
             value={name}
             onChange={(e) => onChange({ name: e.target.value })}

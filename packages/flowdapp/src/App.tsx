@@ -14,8 +14,9 @@ import { Button } from "primereact/button";
 import { useAppDispatch, useAppSelector } from "./store/store";
 import { setElementsState } from "./store/slices/flow";
 import LoadAbiNode from "./components/custom-nodes/LoadAbiNode";
-import PromptNode from "./components/custom-nodes/PromptNode";
 import BooleanNode from "./components/custom-nodes/BooleanNode";
+import TriggerActionNode from "./components/custom-nodes/TriggerActionNode";
+import PromptNode from "./components/custom-nodes/PromptNode";
 import LoadAbiForm from "./components/forms/LoadAbiForm";
 import NodesBar from "./components/NodesBar";
 import Navbar from "./components/NavBar/Navbar";
@@ -23,8 +24,9 @@ import Loader from "./components/Loader";
 
 const nodeTypes = {
   loadAbiNode: LoadAbiNode,
-  promptNode: PromptNode,
   booleanNode: BooleanNode,
+  triggerActionNode: TriggerActionNode,
+  promptNode: PromptNode,
 };
 
 const App = () => {

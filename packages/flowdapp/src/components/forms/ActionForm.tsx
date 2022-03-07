@@ -118,7 +118,6 @@ const ActionForm = (props: IActionFormProps) => {
               return (
                 <div className="flex flex-col gap-1" key={index}>
                   <InputText
-                    className="block"
                     placeholder={`${name}::${type}`}
                     value={props.action.inputs[index]}
                     onChange={(e) => {
@@ -133,7 +132,6 @@ const ActionForm = (props: IActionFormProps) => {
             {method.stateMutability === "payable" && (
               <div className="flex flex-col gap-1">
                 <InputText
-                  className="block"
                   placeholder={`value::eth`}
                   value={props.action.inputs[inputsLength - 1]}
                   onChange={(e) => {
@@ -150,12 +148,13 @@ const ActionForm = (props: IActionFormProps) => {
           <div className="flex flex-col gap-2">
             <p className="font-bold">Output</p>
             <InputText
-              className="block"
+              className="bg-gray-200"
               placeholder={`output::${method.outputs[0].type}`}
               value={props.action.output}
               onChange={(e) =>
                 props.onChange({ ...props.action, output: e.target.value })
               }
+              disabled={true}
             />
           </div>
         )}
@@ -168,7 +167,6 @@ const ActionForm = (props: IActionFormProps) => {
       <div className="flex flex-col gap-1">
         <p className="font-bold">Key</p>
         <InputText
-          className="block"
           placeholder="Key"
           value={props.action.inputs[0]}
           onChange={(e) => {
@@ -182,7 +180,6 @@ const ActionForm = (props: IActionFormProps) => {
         <div className="flex flex-col gap-2">
           <p className="font-bold">Output</p>
           <InputText
-            className="block"
             placeholder="Output"
             value={props.action.output}
             onChange={(e) =>
@@ -195,7 +192,6 @@ const ActionForm = (props: IActionFormProps) => {
         <div className="flex flex-col gap-1">
           <p className="font-bold">Value</p>
           <InputText
-            className="block"
             placeholder="Value"
             value={props.action.inputs[1]}
             onChange={(e) => {
@@ -234,7 +230,9 @@ const ActionForm = (props: IActionFormProps) => {
               ...props.action,
               callFn,
               inputs: new Array(inputsLength),
-              ...(outputs.length > 0 && { output: "" }),
+              ...(outputs.length > 0 && {
+                output: callFn.split(",")[1].toUpperCase(),
+              }),
             });
           }}
         />

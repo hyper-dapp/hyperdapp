@@ -30,7 +30,6 @@ const ConditionForm = ({ condition, onChange }: IConditionFormProps) => {
       <div className="flex flex-col gap-1">
         <p className="font-bold">Left-Hand side</p>
         <InputText
-          className="block"
           placeholder="Left-hand side"
           value={rightSide}
           onChange={(e) => {
@@ -57,7 +56,6 @@ const ConditionForm = ({ condition, onChange }: IConditionFormProps) => {
       <div className="flex flex-col gap-1">
         <p className="font-bold">Right-Hand side</p>
         <InputText
-          className="block"
           placeholder="Right-hand side"
           value={leftSide}
           onChange={(e) => {

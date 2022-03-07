@@ -6,8 +6,9 @@ import { setElementData, setElementsState } from "../store/slices/flow";
 
 enum ElementType {
   LOAD_ABI = "loadAbi",
-  PROMPT = "prompt",
   BOOLEAN = "boolean",
+  TRIGGER_ACTION = "triggerAction",
+  PROMPT = "prompt",
 }
 
 const NodesBar = () => {
@@ -48,6 +49,15 @@ const NodesBar = () => {
           conditions: [],
         };
         break;
+      case ElementType.TRIGGER_ACTION:
+        element.type = "triggerActionNode";
+        element.style = { ...element.style, backgroundColor: "#FFFFFF" };
+        element.data = {
+          ...element.data,
+          type: "",
+          inputs: [],
+        };
+        break;
       case ElementType.PROMPT:
         element.type = "promptNode";
         element.style = { ...element.style, backgroundColor: "#DAE8FC" };
@@ -74,6 +84,11 @@ const NodesBar = () => {
         className="p-button-outlined p-button-secondary"
         label="Boolean"
         onClick={() => setElementByType(ElementType.BOOLEAN)}
+      />
+      <Button
+        className="p-button-outlined p-button-secondary"
+        label="Trigger Action"
+        onClick={() => setElementByType(ElementType.TRIGGER_ACTION)}
       />
       <Button
         className="p-button-outlined p-button-secondary"
