@@ -18,3 +18,9 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.button-wallet.p-button,
+.button-wallet.p-button.p-button-outlined:enabled:hover,
+.button-wallet.p-button.p-button-outlined:enabled:active {
+  color: #07c8d6;
+}

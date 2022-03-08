@@ -21,7 +21,7 @@ const App = () => {
         },
         {
           label: "Context Variables",
-          icon: "pi pi-fw pi-tags",
+          icon: "pi pi-fw pi-globe",
           command: () => navigate("/cortex/variables"),
         },
         {

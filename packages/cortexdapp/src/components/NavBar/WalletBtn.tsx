@@ -39,7 +39,7 @@ const WalletBtn = () => {
   return (
     <>
       <Button
-        className="p-button-outlined p-button-rounded"
+        className="button-wallet p-button-outlined p-button-rounded"
         icon="pi pi-wallet"
         label={btnLabel}
         loading={isAuthenticating}
