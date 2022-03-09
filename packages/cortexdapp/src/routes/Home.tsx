@@ -1,23 +1,22 @@
-import { Button } from "primereact/button";
-import { useAppDispatch, useAppSelector } from "../store/store";
-import Loader from "../components/Loader";
 import { useEffect, useState } from "react";
-import {
-  getCortexData,
-  getCortexList,
-  saveCortex,
-} from "../store/slices/cortex";
+import { useNavigate } from "react-router-dom";
 import { useChain, useMoralis } from "react-moralis";
+import { Button } from "primereact/button";
+import { Column } from "primereact/column";
+import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
-import { useNavigate } from "react-router-dom";
-import { DataTable } from "primereact/datatable";
-import { Column } from "primereact/column";
+import { CortexMoralisEntity, CortexPayload } from "../models/cortex.models";
+import { useAppDispatch, useAppSelector } from "../store/store";
+import { getCortexList, saveCortex } from "../store/slices/cortex";
+import Loader from "../components/Loader";
 
 const Home = () => {
   const { user } = useMoralis();
   const { chainId } = useChain();
-  const { list, isLoading } = useAppSelector((store) => store.cortex);
+  const { arr: cortexList, isLoading } = useAppSelector(
+    (store) => store.cortex
+  );
   const [cortexName, setCortexName] = useState("");
   const [displayDialog, setDisplayDialog] = useState(false);
   const navigate = useNavigate();
@@ -37,8 +36,6 @@ const Home = () => {
           className="p-button-rounded p-button-primary p-button-text"
           onClick={async () => {
             if (!chainId || !user) return;
-            const payload = { cortexId: rowData.id, chainId, user };
-            await dispatch(getCortexData(payload));
             await navigate(`/cortex/${rowData.id}/contracts`);
           }}
         />
@@ -53,24 +50,26 @@ const Home = () => {
   return (
     <div className="container mx-auto p-10 w-full h-full">
       {isLoading && <Loader />}
-      {!isLoading && !list.length && (
-        <div className="flex flex-col gap-8">
-          <p className="text-5xl">Welcome to HyperDapp! 🚀</p>
-          <p className="text-4xl">You don't have any cortex defined yet.</p>
-          <div className="flex flex-row gap-4">
-            <p className="text-3xl">Start creating yours today.</p>
-            <Button
-              label="Create"
-              icon="pi pi-plus"
-              iconPos="left"
-              onClick={() => setDisplayDialog(true)}
-            />
-          </div>
-        </div>
-      )}
-      {!isLoading && list.length > 0 && (
+      {!isLoading && !cortexList.length && (
         <>
-          <p className="text-4xl mb-14">Your Cortex</p>
+          <p className="text-5xl mt-20">Welcome to HyperDapp! 🚀</p>
+          <div className="flex flex-col gap-4 mt-24 text-3xl">
+            <p className="">You don't have any cortex defined yet.</p>
+            <div className="flex flex-row gap-8">
+              <p>Start creating yours today.</p>
+              <Button
+                label="Create"
+                icon="pi pi-plus"
+                iconPos="left"
+                onClick={() => setDisplayDialog(true)}
+              />
+            </div>
+          </div>
+        </>
+      )}
+      {!isLoading && cortexList.length > 0 && (
+        <>
+          <p className="text-4xl mb-14">Cortex List</p>
           <div className="flex flex-col gap-4">
             <div className="flex flex-row-reverse">
               <Button
@@ -82,7 +81,7 @@ const Home = () => {
             </div>
             <DataTable
               dataKey="id"
-              value={list}
+              value={cortexList}
               size="small"
               scrollable
               scrollHeight="450px"
@@ -103,7 +102,7 @@ const Home = () => {
         dismissableMask={false}
         focusOnShow={false}
         onHide={() => {
-          setDisplayDialog(true);
+          setDisplayDialog(false);
           setCortexName("");
         }}
         modal
@@ -113,7 +112,7 @@ const Home = () => {
           <InputText
             value={cortexName}
             placeholder="E.g. Uniswap Interaction Flow"
-            keyfilter="alpha"
+            keyfilter="alphanum"
             onChange={(e) => setCortexName(e.target.value)}
           />
           <Button
@@ -121,9 +120,23 @@ const Home = () => {
             loading={isLoading}
             onClick={async () => {
               if (!cortexName || !chainId || !user) return;
-              const cortex = { name: cortexName, createdBy: user, chainId };
+              const cortex: CortexPayload = {
+                name: cortexName,
+                createdBy: user,
+                chainId,
+                variables: [
+                  {
+                    name: "Connected Address",
+                    value: "me/address",
+                  },
+                ],
+                abis: [],
+                flow: { position: [0, 0], zoom: 1, elements: [] },
+              };
               const { payload } = await dispatch(saveCortex(cortex));
-              await navigate(`/cortex/${payload.id}/contracts`);
+              setDisplayDialog(false);
+              const cortexId = (payload as CortexMoralisEntity).id;
+              await navigate(`/cortex/${cortexId}/contracts`);
             }}
           />
         </div>

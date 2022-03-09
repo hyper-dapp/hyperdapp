@@ -7,16 +7,14 @@ const Cortex = Moralis.Object.extend("Cortex");
 
 interface ICortexSlice {
   isLoading: boolean;
-  list: CortexMoralisEntity[];
-  elements: {
-    [cortexId: string]: Elements;
-  };
+  arr: CortexMoralisEntity[];
+  map: { [cortexId: string]: CortexMoralisEntity };
 }
 
 const initialState: ICortexSlice = {
   isLoading: false,
-  list: [],
-  elements: {},
+  arr: [],
+  map: {},
 };
 
 export const getCortexList = createAsyncThunk(
@@ -26,7 +24,7 @@ export const getCortexList = createAsyncThunk(
     const query = new Moralis.Query("Cortex");
     query.equalTo("chainId", chainId);
     query.equalTo("createdBy", user);
-    query.select("name");
+    query.select("name", "variables", "abis");
     const results = await query.find();
     return results.map((cortex) => {
       const { id, attributes } = cortex;
@@ -47,7 +45,7 @@ export const getCortexData = createAsyncThunk(
     query.equalTo("objectId", cortexId);
     query.equalTo("chainId", chainId);
     query.equalTo("createdBy", user);
-    query.select("elements");
+    query.select("name", "variables", "abis", "flow");
     const cortex = await query.first();
     const { id, attributes } = cortex || {};
     return { id, ...attributes } as CortexMoralisEntity;
@@ -60,11 +58,11 @@ export const saveCortex = createAsyncThunk(
     const cortex = new Cortex();
     const result = await cortex.save(payload);
     const { id, attributes } = result;
-    return { id, ...attributes };
+    return { id, ...attributes } as CortexMoralisEntity;
   }
 );
 
-const elements = createSlice({
+const cortex = createSlice({
   name: "cortex",
   initialState,
   reducers: {
@@ -73,21 +71,23 @@ const elements = createSlice({
       action: PayloadAction<{ cortexId: string; elements: Elements }>
     ) {
       const { cortexId, elements } = action.payload;
-      state.elements[cortexId] = elements;
+      state.map[cortexId].flow.elements = elements;
     },
     setElementData(
       state,
       action: PayloadAction<{ cortexId: string; elementId: string; data: any }>
     ) {
       const { cortexId, elementId, data: newElData } = action.payload;
-      state.elements[cortexId] = state.elements[cortexId].map((el) => {
-        if (el.id === elementId) {
-          const { data: oldElData, ...element } = el;
-          const data = { ...oldElData, ...newElData };
-          return { ...element, data };
+      state.map[cortexId].flow.elements = state.map[cortexId].flow.elements.map(
+        (el) => {
+          if (el.id === elementId) {
+            const { data: oldElData, ...element } = el;
+            const data = { ...oldElData, ...newElData };
+            return { ...element, data };
+          }
+          return el;
         }
-        return el;
-      });
+      );
     },
   },
   extraReducers: (builder) => {
@@ -97,26 +97,29 @@ const elements = createSlice({
       })
       .addCase(getCortexList.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.list = action.payload;
+        state.arr = action.payload;
+        state.map = action.payload.reduce(
+          (res, cortex) => ({ ...res, [cortex.id]: cortex }),
+          {}
+        );
       })
       .addCase(getCortexData.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(getCortexData.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.elements[action.meta.arg.cortexId] =
-          action.payload.elements || [];
+        state.map[action.meta.arg.cortexId] = action.payload;
       })
       .addCase(saveCortex.pending, (state) => {
         state.isLoading = true;
       })
       .addCase(saveCortex.fulfilled, (state, action) => {
         state.isLoading = false;
-        state.elements[action.payload.id] = action.payload;
+        state.map[action.payload.id] = action.payload;
       });
   },
 });
 
-const { actions, reducer } = elements;
+const { actions, reducer } = cortex;
 export const { setElementData, setElementsState } = actions;
 export default reducer;

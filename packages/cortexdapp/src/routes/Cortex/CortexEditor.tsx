@@ -27,35 +27,23 @@ const nodeTypes = {
 
 const CortexEditor = () => {
   const { cortexId } = useParams();
-  const elements = useAppSelector(
-    (store) => store.cortex.elements[cortexId as string]
+  const { elements, position, zoom } = useAppSelector(
+    (store) => store.cortex.map[cortexId as string].flow
   );
   const contracts = useAppSelector((store) => store.contracts);
   const [rfInstance, setRfInstance] = useState<any>(null);
-
   const dispatch = useAppDispatch();
-  const onLoad = useCallback(
-    (rfi) => {
-      debugger;
-      if (!rfInstance) {
-        setRfInstance(rfi);
-      }
-    },
-    [rfInstance]
-  );
 
   const onSave = useCallback(() => {
-    if (rfInstance) {
-      debugger;
-      const elements = rfInstance.toObject();
-      dispatch(saveCortex({ id: cortexId, elements }));
-    }
+    if (!rfInstance) return;
+
+    const flow = rfInstance.toObject();
+    dispatch(saveCortex({ id: cortexId, flow }));
   }, [cortexId, rfInstance, dispatch]);
 
   const onConnect = useCallback(
     (params: any) => {
       if (!cortexId) return;
-
       const id = uuidv4();
       let newEdge = {
         ...params,
@@ -82,9 +70,8 @@ const CortexEditor = () => {
           arrowHeadType: "arrowclosed",
         };
       }
-      dispatch(
-        setElementsState({ cortexId, elements: addEdge(newEdge, elements) })
-      );
+      const newElements = addEdge(newEdge, elements);
+      dispatch(setElementsState({ cortexId, elements: newElements }));
     },
     [cortexId, elements, dispatch]
   );
@@ -92,13 +79,8 @@ const CortexEditor = () => {
   const onEdgeUpdate = useCallback(
     (oldEdge: any, newConnection: any) => {
       if (!cortexId) return;
-
-      dispatch(
-        setElementsState({
-          cortexId,
-          elements: updateEdge(oldEdge, newConnection, elements),
-        })
-      );
+      const newElements = updateEdge(oldEdge, newConnection, elements);
+      dispatch(setElementsState({ cortexId, elements: newElements }));
     },
     [cortexId, elements, dispatch]
   );
@@ -106,13 +88,8 @@ const CortexEditor = () => {
   const onElementsRemove = useCallback(
     (elementsToRemove: any) => {
       if (!cortexId) return;
-
-      dispatch(
-        setElementsState({
-          cortexId,
-          elements: removeElements(elementsToRemove, elements),
-        })
-      );
+      const newElements = removeElements(elementsToRemove, elements);
+      dispatch(setElementsState({ cortexId, elements: newElements }));
     },
     [cortexId, elements, dispatch]
   );
@@ -140,8 +117,10 @@ const CortexEditor = () => {
               onElementsRemove={onElementsRemove}
               onEdgeUpdate={onEdgeUpdate}
               onConnect={onConnect}
-              onLoad={onLoad}
-              panOnScroll={true}
+              onLoad={setRfInstance}
+              defaultPosition={position}
+              defaultZoom={zoom}
+              minZoom={0}
             >
               <Controls />
               <Background

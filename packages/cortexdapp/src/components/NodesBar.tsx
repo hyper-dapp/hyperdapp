@@ -14,8 +14,9 @@ enum ElementType {
 
 const NodesBar = () => {
   const { cortexId } = useParams();
-  const elements =
-    useAppSelector((store) => store.cortex.elements[cortexId as string]) || [];
+  const { elements } = useAppSelector(
+    (store) => store.cortex.map[cortexId as string]
+  ).flow;
   const dispatch = useAppDispatch();
 
   const onChange = (elementId: string, data: any) => {

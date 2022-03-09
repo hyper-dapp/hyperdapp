@@ -1,4 +1,5 @@
-import { useMemo, useState } from "react";
+import { useState } from "react";
+import { useParams } from "react-router-dom";
 import { useChain } from "react-moralis";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
@@ -6,26 +7,26 @@ import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getContractABI } from "../../store/slices/contracts";
+import { saveCortex } from "../../store/slices/cortex";
 
 const CortexContracts = () => {
+  const { cortexId } = useParams();
   const { chainId } = useChain();
+  const abiList = useAppSelector(
+    (store) => store.cortex.map[cortexId as string].abis
+  );
   const [data, setData] = useState({ name: "", address: "" });
-  const contracts = useAppSelector((store) => store.contracts);
   const dispatch = useAppDispatch();
 
-  const contractsList = useMemo(() => {
-    return Object.keys(contracts).map((address) => {
-      return {
-        name: contracts[address].name,
-        address,
-      };
-    });
-  }, [contracts]);
-
-  const loadABI = async () => {
+  const addABI = async () => {
     const { name, address } = data;
-    if (!name || !address || !chainId) return;
+    if (!cortexId || !chainId || !name || !address) return;
+    const payload = {
+      id: cortexId,
+      abis: [...abiList, { name, address }],
+    };
     await dispatch(getContractABI({ chainId, ...data }));
+    await dispatch(saveCortex(payload));
     setData({ name: "", address: "" });
   };
 
@@ -73,13 +74,12 @@ const CortexContracts = () => {
           <Button
             icon="pi pi-plus"
             className="p-button-rounded p-button-outlined self-end"
-            loading={contracts[data.address]?.isLoading}
-            onClick={loadABI}
+            onClick={addABI}
           />
         </div>
         <DataTable
           dataKey="id"
-          value={contractsList}
+          value={abiList}
           size="small"
           scrollable
           scrollHeight="450px"

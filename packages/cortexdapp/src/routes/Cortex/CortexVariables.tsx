@@ -1,31 +1,28 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
 import { useAppDispatch, useAppSelector } from "../../store/store";
-import {
-  getCtxVariables,
-  saveCtxVariable,
-} from "../../store/slices/cortex-variables";
+import { saveCortex } from "../../store/slices/cortex";
 
 const CortexVariables = () => {
   const { cortexId } = useParams();
-  const { isLoading, data: ctxVariables } = useAppSelector(
-    (store) => store.ctxVariables
+  const variables = useAppSelector(
+    (store) => store.cortex.map[cortexId as string].variables
   );
   const [data, setData] = useState({ name: "", value: "" });
   const dispatch = useAppDispatch();
 
-  useEffect(() => {
-    dispatch(getCtxVariables(cortexId || "test123"));
-  }, [cortexId, dispatch]);
-
-  const addContextVariable = async () => {
+  const addVariable = async () => {
     const { name, value } = data;
-    if (!name || !value) return;
-    await dispatch(saveCtxVariable({ cortexId: "test123", name, value }));
+    if (!cortexId || !name || !value) return;
+    const payload = {
+      id: cortexId,
+      variables: [...variables, { name, value }],
+    };
+    await dispatch(saveCortex(payload));
     setData({ name: "", value: "" });
   };
 
@@ -73,16 +70,15 @@ const CortexVariables = () => {
           <Button
             icon="pi pi-plus"
             className="p-button-rounded p-button-outlined self-end"
-            onClick={addContextVariable}
+            onClick={addVariable}
           />
         </div>
         <DataTable
           dataKey="id"
-          value={ctxVariables}
+          value={variables}
           size="small"
           scrollable
           scrollHeight="450px"
-          loading={isLoading}
         >
           <Column field="name" header="Name" />
           <Column field="value" header="Value" />

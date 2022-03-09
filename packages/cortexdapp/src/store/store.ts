@@ -2,7 +2,6 @@ import { configureStore } from "@reduxjs/toolkit";
 import { TypedUseSelectorHook, useDispatch, useSelector } from "react-redux";
 import { createLogger } from "redux-logger";
 import contracts from "./slices/contracts";
-import ctxVariables from "./slices/cortex-variables";
 import cortex from "./slices/cortex";
 
 const loggerMiddleware = createLogger();
@@ -10,7 +9,6 @@ const loggerMiddleware = createLogger();
 export const store = configureStore({
   reducer: {
     contracts,
-    ctxVariables,
     cortex,
   },
   middleware: (getDefaultMiddleware) => {

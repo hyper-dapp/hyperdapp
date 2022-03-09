@@ -1,23 +1,25 @@
-import { Elements } from "react-flow-renderer";
 import Moralis from "moralis";
+import { FlowExportObject } from "react-flow-renderer";
+
+export interface CortexAbi {
+  name: string;
+  address: string;
+}
+
+export interface CortexVariable {
+  name: string;
+  value: string;
+}
 
 export interface CortexPayload {
   name: string;
   chainId: string;
   createdBy: Moralis.User;
-  elements: Elements;
+  abis: CortexAbi[];
+  variables: CortexVariable[];
+  flow: FlowExportObject;
 }
 
 export interface CortexMoralisEntity extends CortexPayload {
-  id: string;
-}
-
-export interface CtxVariablePayload {
-  name: string;
-  value: string;
-  cortexId: string;
-}
-
-export interface CtxVariableMoralisEntity extends CtxVariablePayload {
   id: string;
 }
