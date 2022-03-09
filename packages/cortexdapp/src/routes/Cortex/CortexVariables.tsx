@@ -1,16 +1,16 @@
 import { useEffect, useState } from "react";
+import { useParams } from "react-router-dom";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
-import { useAppDispatch, useAppSelector } from "../store/store";
+import { useAppDispatch, useAppSelector } from "../../store/store";
 import {
   getCtxVariables,
   saveCtxVariable,
-} from "../store/slices/context-variables";
-import { useParams } from "react-router-dom";
+} from "../../store/slices/cortex-variables";
 
-const ContextVariables = () => {
+const CortexVariables = () => {
   const { cortexId } = useParams();
   const { isLoading, data: ctxVariables } = useAppSelector(
     (store) => store.ctxVariables
@@ -27,6 +27,21 @@ const ContextVariables = () => {
     if (!name || !value) return;
     await dispatch(saveCtxVariable({ cortexId: "test123", name, value }));
     setData({ name: "", value: "" });
+  };
+
+  const actionBodyTemplate = (rowData: any) => {
+    return (
+      <div className="flex flex-row gap-4">
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-primary p-button-text"
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-danger p-button-text"
+        />
+      </div>
+    );
   };
 
   return (
@@ -62,32 +77,20 @@ const ContextVariables = () => {
           />
         </div>
         <DataTable
+          dataKey="id"
           value={ctxVariables}
+          size="small"
           scrollable
           scrollHeight="450px"
           loading={isLoading}
         >
           <Column field="name" header="Name" />
           <Column field="value" header="Value" />
-          <Column
-            body={
-              <div className="flex flex-row gap-4">
-                <Button
-                  icon="pi pi-pencil"
-                  className="p-button-rounded p-button-primary p-button-text"
-                />
-                <Button
-                  icon="pi pi-trash"
-                  className="p-button-rounded p-button-danger p-button-text"
-                />
-              </div>
-            }
-            exportable={false}
-          />
+          <Column body={actionBodyTemplate} exportable={false} />
         </DataTable>
       </div>
     </>
   );
 };
 
-export default ContextVariables;
+export default CortexVariables;

@@ -1,8 +1,9 @@
 import { v4 as uuidv4 } from "uuid";
+import { useParams } from "react-router-dom";
 import { FlowElement } from "react-flow-renderer";
 import { Button } from "primereact/button";
 import { useAppDispatch, useAppSelector } from "../store/store";
-import { setElementData, setElementsState } from "../store/slices/flow";
+import { setElementData, setElementsState } from "../store/slices/cortex";
 
 enum ElementType {
   LOAD_ABI = "loadAbi",
@@ -12,14 +13,19 @@ enum ElementType {
 }
 
 const NodesBar = () => {
-  const { elements } = useAppSelector((store) => store.flow);
+  const { cortexId } = useParams();
+  const elements =
+    useAppSelector((store) => store.cortex.elements[cortexId as string]) || [];
   const dispatch = useAppDispatch();
 
-  const onChange = (id: string, data: any) => {
-    dispatch(setElementData({ id, data }));
+  const onChange = (elementId: string, data: any) => {
+    if (!cortexId) return;
+    dispatch(setElementData({ cortexId, elementId, data }));
   };
 
   const setElementByType = (type: ElementType) => {
+    if (!cortexId) return;
+
     const id = uuidv4();
     const element: FlowElement = {
       id,
@@ -70,7 +76,12 @@ const NodesBar = () => {
         break;
     }
 
-    dispatch(setElementsState(elements.concat(element)));
+    dispatch(
+      setElementsState({
+        cortexId,
+        elements: elements.concat(element),
+      })
+    );
   };
 
   return (

@@ -4,10 +4,10 @@ import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
-import { useAppDispatch, useAppSelector } from "../store/store";
-import { getContractABI } from "../store/slices/contracts";
+import { useAppDispatch, useAppSelector } from "../../store/store";
+import { getContractABI } from "../../store/slices/contracts";
 
-const ContractABIs = () => {
+const CortexContracts = () => {
   const { chainId } = useChain();
   const [data, setData] = useState({ name: "", address: "" });
   const contracts = useAppSelector((store) => store.contracts);
@@ -27,6 +27,21 @@ const ContractABIs = () => {
     if (!name || !address || !chainId) return;
     await dispatch(getContractABI({ chainId, ...data }));
     setData({ name: "", address: "" });
+  };
+
+  const actionBodyTemplate = (rowData: any) => {
+    return (
+      <div className="flex flex-row gap-4">
+        <Button
+          icon="pi pi-pencil"
+          className="p-button-rounded p-button-primary p-button-text"
+        />
+        <Button
+          icon="pi pi-trash"
+          className="p-button-rounded p-button-danger p-button-text"
+        />
+      </div>
+    );
   };
 
   return (
@@ -62,13 +77,20 @@ const ContractABIs = () => {
             onClick={loadABI}
           />
         </div>
-        <DataTable value={contractsList} scrollable scrollHeight="450px">
+        <DataTable
+          dataKey="id"
+          value={contractsList}
+          size="small"
+          scrollable
+          scrollHeight="450px"
+        >
           <Column field="name" header="Name" />
           <Column field="address" header="Address" />
+          <Column body={actionBodyTemplate} exportable={false} />
         </DataTable>
       </div>
     </>
   );
 };
 
-export default ContractABIs;
+export default CortexContracts;

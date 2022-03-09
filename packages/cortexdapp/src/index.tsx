@@ -10,11 +10,13 @@ import "primereact/resources/primereact.min.css";
 import "primeicons/primeicons.css";
 import "./index.css";
 import store from "./store/store";
-import ContractABIs from "./routes/ContractABIs";
-import CortexEditor from "./routes/CortexEditor";
+import Home from "./routes/Home";
+import Cortex from "./routes/Cortex/Cortex";
+import CortexContracts from "./routes/Cortex/CortexContracts";
+import CortexVariables from "./routes/Cortex/CortexVariables";
+import CortexEditor from "./routes/Cortex/CortexEditor";
 import App from "./App";
 import reportWebVitals from "./reportWebVitals";
-import ContextVariables from "./routes/ContextVariables";
 
 const appId = process.env.REACT_APP_MORALIS_APPLICATION_ID as string;
 const serverUrl = process.env.REACT_APP_MORALIS_SERVER_URL as string;
@@ -28,10 +30,30 @@ ReactDOM.render(
         <BrowserRouter>
           <Routes>
             <Route element={<App />}>
-              <Route path="/cortex/abi" element={<ContractABIs />} />
-              <Route path="/cortex/editor" element={<CortexEditor />} />
-              <Route path="/cortex/variables" element={<ContextVariables />} />
-              <Route path="/" element={<Navigate to="/cortex/editor" />} />
+              <Route path="/home" element={<Home />} />
+              <Route path="/cortex/:cortexId" element={<Cortex />}>
+                <Route
+                  path="/cortex/:cortexId/contracts"
+                  element={<CortexContracts />}
+                />
+                <Route
+                  path="/cortex/:cortexId/variables"
+                  element={<CortexVariables />}
+                />
+                <Route
+                  path="/cortex/:cortexId/editor"
+                  element={<CortexEditor />}
+                />
+                <Route
+                  path="*"
+                  element={
+                    <main className="p-1">
+                      <p>This Cortex ID doesn't exist!</p>
+                    </main>
+                  }
+                />
+              </Route>
+              <Route path="/" element={<Navigate to="/home" />} />
             </Route>
           </Routes>
         </BrowserRouter>

@@ -19,8 +19,33 @@ body {
   -moz-osx-font-smoothing: grayscale;
 }
 
-.button-wallet.p-button,
-.button-wallet.p-button.p-button-outlined:enabled:hover,
-.button-wallet.p-button.p-button-outlined:enabled:active {
+@media screen and (max-width: 960px) {
+  .p-menubar .p-menubar-button {
+    display: none;
+  }
+}
+
+.p-menu .p-menuitem-link:focus,
+.p-menubar .p-menubar-root-list > .p-menuitem > .p-menuitem-link:focus,
+.p-button.p-button-danger.p-button-text:focus,
+.p-button:focus {
+  outline: 0 none;
+  outline-offset: 0;
+  box-shadow: none;
+}
+
+.hd-menubar.p-menubar
+  .p-menubar-root-list
+  > .p-menuitem
+  > .p-menuitem-link
+  .p-menuitem-text,
+.hd-menubar.p-menubar
+  .p-menubar-root-list
+  > .p-menuitem
+  > .p-menuitem-link
+  .p-menuitem-icon,
+.hd-button.p-button,
+.hd-button.p-button.p-button-outlined:enabled:hover,
+.hd-button.p-button.p-button-outlined:enabled:active {
   color: #07c8d6;
 }

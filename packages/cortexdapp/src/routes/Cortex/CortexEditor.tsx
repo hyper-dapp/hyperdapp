@@ -1,5 +1,6 @@
 import { v4 as uuidv4 } from "uuid";
 import { useCallback, useState } from "react";
+import { useParams } from "react-router-dom";
 import ReactFlow, {
   addEdge,
   Background,
@@ -9,13 +10,13 @@ import ReactFlow, {
   updateEdge,
 } from "react-flow-renderer";
 import { Button } from "primereact/button";
-import { useAppDispatch, useAppSelector } from "../store/store";
-import { setElementsState } from "../store/slices/flow";
-import NodesBar from "../components/NodesBar";
-import LoadAbiNode from "../components/custom-nodes/LoadAbiNode";
-import BooleanNode from "../components/custom-nodes/BooleanNode";
-import TriggerActionNode from "../components/custom-nodes/TriggerActionNode";
-import PromptNode from "../components/custom-nodes/PromptNode";
+import { useAppDispatch, useAppSelector } from "../../store/store";
+import { saveCortex, setElementsState } from "../../store/slices/cortex";
+import NodesBar from "../../components/NodesBar";
+import LoadAbiNode from "../../components/custom-nodes/LoadAbiNode";
+import BooleanNode from "../../components/custom-nodes/BooleanNode";
+import TriggerActionNode from "../../components/custom-nodes/TriggerActionNode";
+import PromptNode from "../../components/custom-nodes/PromptNode";
 
 const nodeTypes = {
   loadAbiNode: LoadAbiNode,
@@ -25,13 +26,17 @@ const nodeTypes = {
 };
 
 const CortexEditor = () => {
+  const { cortexId } = useParams();
+  const elements = useAppSelector(
+    (store) => store.cortex.elements[cortexId as string]
+  );
   const contracts = useAppSelector((store) => store.contracts);
-  const { elements } = useAppSelector((store) => store.flow);
   const [rfInstance, setRfInstance] = useState<any>(null);
 
   const dispatch = useAppDispatch();
   const onLoad = useCallback(
     (rfi) => {
+      debugger;
       if (!rfInstance) {
         setRfInstance(rfi);
       }
@@ -41,13 +46,16 @@ const CortexEditor = () => {
 
   const onSave = useCallback(() => {
     if (rfInstance) {
-      const flow = rfInstance.toObject();
-      console.log(flow);
+      debugger;
+      const elements = rfInstance.toObject();
+      dispatch(saveCortex({ id: cortexId, elements }));
     }
-  }, [rfInstance]);
+  }, [cortexId, rfInstance, dispatch]);
 
   const onConnect = useCallback(
     (params: any) => {
+      if (!cortexId) return;
+
       const id = uuidv4();
       let newEdge = {
         ...params,
@@ -74,26 +82,47 @@ const CortexEditor = () => {
           arrowHeadType: "arrowclosed",
         };
       }
-      dispatch(setElementsState(addEdge(newEdge, elements)));
+      dispatch(
+        setElementsState({ cortexId, elements: addEdge(newEdge, elements) })
+      );
     },
-    [elements, dispatch]
+    [cortexId, elements, dispatch]
   );
 
   const onEdgeUpdate = useCallback(
     (oldEdge: any, newConnection: any) => {
-      dispatch(setElementsState(updateEdge(oldEdge, newConnection, elements)));
+      if (!cortexId) return;
+
+      dispatch(
+        setElementsState({
+          cortexId,
+          elements: updateEdge(oldEdge, newConnection, elements),
+        })
+      );
     },
-    [elements, dispatch]
+    [cortexId, elements, dispatch]
   );
 
   const onElementsRemove = useCallback(
     (elementsToRemove: any) => {
-      dispatch(setElementsState(removeElements(elementsToRemove, elements)));
+      if (!cortexId) return;
+
+      dispatch(
+        setElementsState({
+          cortexId,
+          elements: removeElements(elementsToRemove, elements),
+        })
+      );
     },
-    [elements, dispatch]
+    [cortexId, elements, dispatch]
   );
   return (
     <div className="flex flex-col flex-auto gap-6 h-full">
+      {Object.keys(contracts).length === 0 && (
+        <p className="text-xl">
+          No ABIs detected! You must load at least one ABI first!
+        </p>
+      )}
       {Object.keys(contracts).length > 0 && (
         <>
           <div className="flex flex-row justify-between">
@@ -123,11 +152,6 @@ const CortexEditor = () => {
             </ReactFlow>
           </div>
         </>
-      )}
-      {Object.keys(contracts).length === 0 && (
-        <p className="text-xl">
-          No ABIs detected! You must load at least one ABI first!
-        </p>
       )}
     </div>
   );

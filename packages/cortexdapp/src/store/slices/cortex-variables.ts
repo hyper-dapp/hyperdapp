@@ -3,7 +3,7 @@ import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 import {
   CtxVariableMoralisEntity,
   CtxVariablePayload,
-} from "../../models/context-variables.models";
+} from "../../models/cortex.models";
 
 const CtxVariable = Moralis.Object.extend("CortexCtxVariable");
 
