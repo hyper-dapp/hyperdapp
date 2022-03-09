@@ -36,7 +36,7 @@ const Home = () => {
           className="p-button-rounded p-button-primary p-button-text"
           onClick={async () => {
             if (!chainId || !user) return;
-            await navigate(`/cortex/${rowData.id}/contracts`);
+            await navigate(`/cortex/${rowData.id}/editor`);
           }}
         />
         <Button
