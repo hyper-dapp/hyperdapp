@@ -3,7 +3,7 @@ import { EVM, generateFlowCode, createTestFlow } from '../_test-helper.js'
 import { createFlow } from '../../index.js'
 
 o.spec('Integration: Tuition', () => {
-  o.specTimeout(500)
+  o.specTimeout(750)
 
   let evm, contract, owner, treasury, staff, student;
   let flow;

@@ -84,11 +84,11 @@ prompt :- get(tab, admin), show text('Admin (TODO)').
 %%
 has_paid(Bool) :-
   get(me/address, Addr),
-  call_fn(tuition, alreadyPaid(Addr), [Bool]).
+  call_fn(tuition, alreadyPaid(Addr), [{Bool}]).
 
 is_staff(Bool) :-
   get(me/address, Addr),
-  call_fn(tuition, isStaff(Addr), [Bool]).
+  call_fn(tuition, isStaff(Addr), [{Bool}]).
 
 is_owner(Bool) :-
   get(me/address, Addr),

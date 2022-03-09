@@ -199,6 +199,7 @@ export class EVM {
     }
 
     // TODO: Support tuples
+    // console.log("Return value", AbiCoder.decode([returnType], result.execResult.returnValue))
     return AbiCoder.decode([returnType], result.execResult.returnValue)
   }
 

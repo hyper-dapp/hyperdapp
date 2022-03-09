@@ -3434,6 +3434,20 @@ Term.prototype.toJavaScript = function(options) {
 	// Atom => String
 	if( this.args.length === 0 && this.indicator !== "[]/0" ) {
 		return this.toString(options);
+	} else if(
+		this.args.length === 1 && this.id === "{}" && this.args[0].args.length === 0 && (
+			this.args[0].id === 'null' ||
+			this.args[0].id === 'undefined' ||
+			this.args[0].id === 'true' ||
+			this.args[0].id === 'false'
+		)
+	) {
+		switch(this.args[0].id) {
+			case 'null': return null
+			case 'true': return true
+			case 'false': return false
+			case 'undefined': return undefined
+		}
 	} else if( pl.type.is_list( this ) ) {
 		// List => Array
 		var all_obj = true;
@@ -3567,9 +3581,14 @@ var pl = {
 			list: function( obj, tobj ) {
 				return obj instanceof Array;
 			},
+
+			// Null
+			null: function( obj, tobj ) {
+				return obj === null;
+			},
 			
-			// Variable
-			variable: function( obj, tobj ) {
+			// Undefined
+			undefined: function( obj, tobj ) {
 				return obj === undefined;
 			},
 
@@ -3591,7 +3610,7 @@ var pl = {
 			
 			// Bolean
 			boolean: function( obj, tobj ) {
-				return new Term( obj ? "true" : "false", [] );
+				return new Term( '{}', [new Term( obj ? "true" : "false", [] ) ]);
 			},
 			
 			// Number
@@ -3617,10 +3636,15 @@ var pl = {
 				}
 				return arrayToList( arr );
 			},
-			
-			// Variable
-			variable: function( obj, tobj ) {
-				return new Var( "_" );
+
+			// Null
+			null: function( obj, tobj ) {
+				return new Term( '{}', [new Term("null", [] ) ]);
+			},
+
+			// Undefined
+			undefined: function( obj, tobj ) {
+				return new Term( '{}', [new Term("undefined", [] ) ]);
 			},
 
 			// Object

@@ -89,8 +89,9 @@ export default function( pl ) {
 					thread.throw_error( pl.error.type( "atom", name, atom.indicator ) );
 				} else {
 					if( pl.type.is_atom( name ) ) {
-						var fn = context.toJavaScript()[name.id];
-						if( fn !== undefined ) {
+						var contextJs = context.toJavaScript()
+						if( contextJs && contextJs.hasOwnProperty(name.id) ) {
+							var fn = contextJs[name.id];
 							fn = pl.fromJavaScript.apply( fn );
 							thread.prepend( [new pl.type.State( point.goal.replace( new pl.type.Term( "=", [fn, result] ) ), point.substitution, point )] );
 						}
