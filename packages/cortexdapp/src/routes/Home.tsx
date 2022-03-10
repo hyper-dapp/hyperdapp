@@ -1,12 +1,14 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChain, useMoralis } from "react-moralis";
+import { toast } from "react-toastify";
 import { Button } from "primereact/button";
 import { Column } from "primereact/column";
 import { DataTable } from "primereact/datatable";
 import { Dialog } from "primereact/dialog";
 import { InputText } from "primereact/inputtext";
 import { CortexMoralisEntity, CortexPayload } from "../models/cortex.models";
+import { TOAST_TXT } from "../models/toast.models";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { getCortexList, saveCortex } from "../store/slices/cortex";
 import Loader from "../components/Loader";
@@ -137,6 +139,7 @@ const Home = () => {
               setDisplayDialog(false);
               const cortexId = (payload as CortexMoralisEntity).id;
               await navigate(`/cortex/${cortexId}/contracts`);
+              toast.success(TOAST_TXT.CORTEX_CREATED);
             }}
           />
         </div>

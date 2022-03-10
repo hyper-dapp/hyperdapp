@@ -9,14 +9,16 @@ import ReactFlow, {
   removeElements,
   updateEdge,
 } from "react-flow-renderer";
+import { toast } from "react-toastify";
 import { Button } from "primereact/button";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { saveCortex, setElementsState } from "../../store/slices/cortex";
+import { TOAST_TXT } from "../../models/toast.models";
 import NodesBar from "../../components/NodesBar";
 import LoadAbiNode from "../../components/custom-nodes/LoadAbiNode";
 import BooleanNode from "../../components/custom-nodes/BooleanNode";
-import TriggerActionNode from "../../components/custom-nodes/TriggerActionNode";
 import PromptNode from "../../components/custom-nodes/PromptNode";
+import TriggerActionNode from "../../components/custom-nodes/TriggerActionNode";
 
 const nodeTypes = {
   loadAbiNode: LoadAbiNode,
@@ -35,10 +37,15 @@ const CortexEditor = () => {
   const dispatch = useAppDispatch();
 
   const onSave = useCallback(() => {
-    if (!rfInstance) return;
+    const save = async () => {
+      if (!rfInstance) return;
 
-    const flow = rfInstance.toObject();
-    dispatch(saveCortex({ id: cortexId, flow }));
+      const flow = rfInstance.toObject();
+      await dispatch(saveCortex({ id: cortexId, flow }));
+      toast.success(TOAST_TXT.DATA_SAVED);
+    };
+
+    save();
   }, [cortexId, rfInstance, dispatch]);
 
   const onConnect = useCallback(
@@ -104,11 +111,7 @@ const CortexEditor = () => {
         <>
           <div className="flex flex-row justify-between">
             <NodesBar />
-            <Button
-              className="p-button-success"
-              label="Save"
-              onClick={onSave}
-            />
+            <Button label="Save" onClick={onSave} />
           </div>
           <div className="flex flex-col flex-auto h-full border-2 border-black">
             <ReactFlow

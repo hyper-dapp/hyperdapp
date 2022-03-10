@@ -1,10 +1,12 @@
 import { useState } from "react";
 import { useParams } from "react-router-dom";
 import { useChain } from "react-moralis";
+import { toast } from "react-toastify";
 import { Button } from "primereact/button";
 import { DataTable } from "primereact/datatable";
 import { Column } from "primereact/column";
 import { InputText } from "primereact/inputtext";
+import { TOAST_TXT } from "../../models/toast.models";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { getContractABI } from "../../store/slices/contracts";
 import { saveCortex } from "../../store/slices/cortex";
@@ -27,6 +29,7 @@ const CortexContracts = () => {
     };
     await dispatch(getContractABI({ chainId, ...data }));
     await dispatch(saveCortex(payload));
+    toast.success(TOAST_TXT.DATA_SAVED);
     setData({ name: "", address: "" });
   };
 

@@ -5,9 +5,8 @@ export enum TOAST_TXT {
   NOT_CONNECTED = "Please connect to MetaMask",
   NOT_INSTALLED = "Please installed MetaMask",
   PERMISSIONS_REQUIRED = "Permissions are required!",
-  CONTRACT_INITIALIZATION_ERROR = "Contract cannot be initialized! Contract source code not verified or wrong network.",
-  TRANSACTION_PROCESS = "Transaction in process...",
-  TRANSACTION_CONFIRMED = "Transaction confirmed!",
+  CORTEX_CREATED = "Cortex created successfully!",
+  DATA_SAVED = "Data saved successfully!",
   ERROR_OCCURRED = "An error occurred!",
   WRONG_NETWORK = "Metamask is connected to the wrong network. Please switch to ",
 }
