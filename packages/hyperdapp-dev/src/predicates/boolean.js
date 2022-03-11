@@ -29,40 +29,40 @@ export function createBooleanPredicate(predicate_name, operations, condition) {
   return `${head} :- ${body.join(", ")}.`;
 }
 
-console.log(
-  createBooleanPredicate(
-    "has_paid",
-    [
-      {
-        type: "getData",
-        params: "me/address",
-        output: "ConnectedAddress",
-      },
-      {
-        type: "callFn",
-        params: ["tuition", ["alreadyPaid", "ConnectedAddress"]],
-        output: ["AlreadyPaid"],
-      },
-    ],
-    "AlreadyPaid"
-  )
-);
+// console.log(
+//   createBooleanPredicate(
+//     "has_paid",
+//     [
+//       {
+//         type: "getData",
+//         params: "me/address",
+//         output: "ConnectedAddress",
+//       },
+//       {
+//         type: "callFn",
+//         params: ["tuition", ["alreadyPaid", "ConnectedAddress"]],
+//         output: ["AlreadyPaid"],
+//       },
+//     ],
+//     "AlreadyPaid"
+//   )
+// );
 
-console.log(
-  createBooleanPredicate(
-    "is_owner",
-    [
-      {
-        type: "getData",
-        params: "me/address",
-        output: "ConnectedAddress",
-      },
-      {
-        type: "callFn",
-        params: ["tuition", ["owner"]],
-        output: ["Owner"],
-      },
-    ],
-    "ConnectedAddress == Owner"
-  )
-);
+// console.log(
+//   createBooleanPredicate(
+//     "is_owner",
+//     [
+//       {
+//         type: "getData",
+//         params: "me/address",
+//         output: "ConnectedAddress",
+//       },
+//       {
+//         type: "callFn",
+//         params: ["tuition", ["owner"]],
+//         output: ["Owner"],
+//       },
+//     ],
+//     "ConnectedAddress == Owner"
+//   )
+// );
