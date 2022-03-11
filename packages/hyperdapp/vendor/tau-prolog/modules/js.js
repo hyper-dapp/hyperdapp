@@ -451,9 +451,62 @@ export default function( pl ) {
 		};
 
 		// unify
-		pl.type.JSValue.prototype.unify = function( obj, _ ) {
+		pl.type.JSValue.prototype.unify = function( obj, occurs_check ) {
 			if( pl.type.is_js_object( obj ) && this.value === obj.value ) {
 				return new pl.type.State( obj, new pl.type.Substitution() );
+			}
+			else if (obj.id === '{}') {
+				// Extract matches from comma list
+				// Done separately here to simplify substitution logic
+				var terms = []
+				var current = obj.args[0]
+				while(current.id === ',') {
+					var head = current.args[0]
+					var tail = current.args[1]
+					terms.push(head)
+					current = tail
+				}
+				terms.push(current)
+
+				// Make substitutions
+				var subs = new pl.type.Substitution();
+
+				for( var i = 0; i < terms.length; i++ ) {
+					var term = terms[i];
+					if (term.indicator === ':/2') {
+						var prop = term.args[0]
+						var value = term.args[1]
+
+						if (!pl.type.is_atom(prop) || !pl.type.is_ground(this.value[prop])) {
+							console.warn("Only ground atom props are currently supported:", prop);
+							return null;
+						}
+
+						// Property must exist in object
+						if (!(prop.id in this.value)) {
+							return null;
+						}
+
+						// var val = pl.fromJavaScript.apply(this.value[prop]);
+						var mgu = pl.unify(
+							value.apply( subs ),
+							pl.fromJavaScript.apply(this.value[prop]).apply( subs ),
+							occurs_check
+						);
+						if (mgu === null) {
+							return null;
+						}
+						for (var x in mgu.links) {
+							subs.links[x] = mgu.links[x];
+						}
+						subs = subs.apply( mgu );
+					}
+					else {
+						console.warn("Unrecognized term in object match syntax:", term)
+						return null;
+					}
+				}
+				return subs;
 			}
 			return null;
 		};

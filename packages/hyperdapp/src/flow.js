@@ -128,6 +128,8 @@ export async function createFlow(flowCode, {
     },
   }
 
+  // WARNING: This line prevents multiple flow
+  // instances existing at one time
   prolog.__env = env
 
   const session = prolog.create()

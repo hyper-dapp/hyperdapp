@@ -4732,7 +4732,23 @@ var pl = {
 						links[i] = links[i].apply( subs );
 					links[s.id] = t;
 				}
-			} else if( pl.type.is_variable(t) ) {
+			} else if( pl.type.is_js_object && s.id === '{}' && pl.type.is_js_object(t) ) {
+				var subs = t.unify(s, occurs_check)
+				if (!subs) {
+					return null;
+				}
+				for( var i = 0; i < G.length; i++ ) {
+					G[i].left = G[i].left.apply( subs );
+					G[i].right = G[i].right.apply( subs );
+				}
+				for( var i in links ) {
+					links[i] = links[i].apply( subs );
+				}
+				for( var i in subs.links ) {
+					// TODO: Is this right?
+					links[i] = links[i] || subs.links[i];
+				}
+			} else if( pl.type.is_variable(t) || pl.type.is_js_object && t.id === '{}' && pl.type.is_js_object(s) ) {
 				G.push( {left: t, right: s} );
 			} else if( s.unify !== undefined ) {
 				if( !s.unify(t) )
