@@ -20,12 +20,12 @@ o.spec('Integration: Guestbook', () => {
     flow = await createTestFlow(flowCode)
   })
 
-  async function promptExists(blockNum, query, count=1) {
+  async function promptExists(query, count=1) {
     count =
       count === true ? 1 :
       count === false ? 0 :
       count
-    o(await flow.promptCount(blockNum, query)).equals(count)
+    o(await flow.promptCount(query)).equals(count)
   }
 
   async function effectExists(query, count=1) {
@@ -38,8 +38,8 @@ o.spec('Integration: Guestbook', () => {
 
   o('Detects guestbook', async () => {
     await flow.init(alice.address, 10, { signer: alice })
-    await promptExists(10, `button('Create Guestbook', _)`)
-    await promptExists(10, `button('Open My Guestbook', _)`, false)
+    await promptExists(`button('Create Guestbook', _)`)
+    await promptExists(`button('Open My Guestbook', _)`, false)
 
     // Update state, then ensure prompt changed
     await alice.call(contract, 'create()', [])
@@ -48,8 +48,10 @@ o.spec('Integration: Guestbook', () => {
     const ret = await alice.get(contract, 'guestbooks(address): uint', [alice.address])
     o(ret.toString()).deepEquals('1')
 
-    await promptExists(20, `button('Create Guestbook', _)`, false)
-    await promptExists(20, `button('Open My Guestbook', _)`)
+    flow.setBlockNumber(20)
+
+    await promptExists(`button('Create Guestbook', _)`, false)
+    await promptExists(`button('Open My Guestbook', _)`)
   })
 
   o('Creates and displays an entry', async () => {
@@ -57,50 +59,52 @@ o.spec('Integration: Guestbook', () => {
     await bob.call(contract, 'create()', [])
 
     await flow.init(alice.address, 10, { signer: alice })
-    const [{ OpenAction }] = await flow.matchPrompts(10, `button('Open a Guestbook', OpenAction)`, 'OpenAction')
+    const [{ OpenAction }] = await flow.matchPrompts(`button('Open a Guestbook', OpenAction)`, 'OpenAction')
 
     await flow.execute(OpenAction)
 
-    await promptExists(10, `input(address, owner)`)
-    await promptExists(10, `debug(viewing(_))`, false)
+    await promptExists(`input(address, owner)`)
+    await promptExists(`debug(viewing(_))`, false)
 
     // Button should NOT be enabled
-    const [{ E }] = await flow.matchPrompts(10, `button('Open Guestbook', { enabled: E }, _)`, 'E')
+    const [{ E }] = await flow.matchPrompts(`button('Open Guestbook', { enabled: E }, _)`, 'E')
     o(E).equals(false)
 
     // Input an address
-    const [{ Name }] = await flow.matchPrompts(10, `input(address, Name)`, 'Name')
+    const [{ Name }] = await flow.matchPrompts(`input(address, Name)`, 'Name')
     await flow.handleInput(Name, bob.address)
 
     // Button should be enabled
-    const [{ E: E2 }] = await flow.matchPrompts(10, `button('Open Guestbook', { enabled: E }, _)`, 'E')
+    const [{ E: E2 }] = await flow.matchPrompts(`button('Open Guestbook', { enabled: E }, _)`, 'E')
     o(E2).equals(true)
 
 
-    const [{ Action }] = await flow.matchPrompts(10, `button('Open Guestbook', _, Action)`, 'Action')
+    const [{ Action }] = await flow.matchPrompts(`button('Open Guestbook', _, Action)`, 'Action')
 
     const { effects } = await flow.execute(Action)
     o(effects).deepEquals([])
 
-    await promptExists(10, `debug(viewing(_))`)
-    await promptExists(10, `debug(latest_entry(_))`, false)
+    await promptExists(`debug(viewing(_))`)
+    await promptExists(`debug(latest_entry(_))`, false)
 
     // Create an entry using the UI
-    const [{ Name: NameEth }] = await flow.matchPrompts(10, `input(eth, Name)`, 'Name')
+    const [{ Name: NameEth }] = await flow.matchPrompts(`input(eth, Name)`, 'Name')
     await flow.handleInput(NameEth, 0.2)
 
-    const [{ Name: NameMessage }] = await flow.matchPrompts(10, `input(string, Name)`, 'Name')
+    const [{ Name: NameMessage }] = await flow.matchPrompts(`input(string, Name)`, 'Name')
     await flow.handleInput(NameMessage, 'Good job!')
 
-    const [{ E: E3 }] = await flow.matchPrompts(10, `button('Submit', { enabled: E }, _)`, 'E')
+    const [{ E: E3 }] = await flow.matchPrompts(`button('Submit', { enabled: E }, _)`, 'E')
     o(E3).equals(true)
 
-    const [{ Action: SubmitAction }] = await flow.matchPrompts(10, `button('Submit', _, Action)`, 'Action')
+    const [{ Action: SubmitAction }] = await flow.matchPrompts(`button('Submit', _, Action)`, 'Action')
     await flow.execute(SubmitAction)
 
+    flow.setBlockNumber(20)
+
     // Ensure prompts are updated
-    await promptExists(20, `debug(viewing(_))`)
-    await promptExists(20, `debug(latest_entry(_))`)
+    await promptExists(`debug(viewing(_))`)
+    await promptExists(`debug(latest_entry(_))`)
   })
 })
 

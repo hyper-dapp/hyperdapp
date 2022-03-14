@@ -191,12 +191,6 @@ export async function createFlow(flowCode, {
   let callEnv = {}
   let currentBlock = { number: 0, cache: {} }
 
-  function updateCurrentBlock(blockNum) {
-    if (blockNum !== currentBlock.number) {
-      currentBlock = { number: blockNum, cache: {} }
-    }
-  }
-
   function afterInit(fn) {
     return async (...args) => {
       if (!env.context.__.hasInit) {
@@ -214,7 +208,7 @@ export async function createFlow(flowCode, {
         callEnv = callEnv_
         env.context.me.address = signerAddress
 
-        updateCurrentBlock(blockNum)
+        api.setBlockNumber(blockNum)
 
         await session.promiseQuery(`register_addresses, current_predicate(init/0), init.`)
         for await (let answer of session.promiseAnswers()) {
@@ -231,10 +225,14 @@ export async function createFlow(flowCode, {
       }
     ),
 
-    getPrompts: tryCatchProlog(afterInit(
-        async function getPrompts(blockNum) {
-        updateCurrentBlock(blockNum)
+    setBlockNumber(blockNum) {
+      if (blockNum !== currentBlock.number) {
+        currentBlock = { number: blockNum, cache: {} }
+      }
+    },
 
+    getPrompts: tryCatchProlog(afterInit(
+      async function getPrompts() {
         let prompts = []
 
         await session.promiseQuery(`prompt_list(Prompt).`)
@@ -253,9 +251,7 @@ export async function createFlow(flowCode, {
     )),
 
     matchPrompts: tryCatchProlog(afterInit(
-      async function matchPrompts(blockNum, matchQuery, selectVariable) {
-        updateCurrentBlock(blockNum)
-
+      async function matchPrompts(matchQuery, selectVariable) {
         const selectQuery = selectVariable
           ? `, (term_to_list(${selectVariable}, ${selectVariable}Out) -> true; ${selectVariable}Out = ${selectVariable})`
           : ''
@@ -276,8 +272,8 @@ export async function createFlow(flowCode, {
       }
     )),
 
-    async promptCount(blockNum, query) {
-      const results = await api.matchPrompts(blockNum, query)
+    async promptCount(query) {
+      const results = await api.matchPrompts(query)
       return results.length
     },
 

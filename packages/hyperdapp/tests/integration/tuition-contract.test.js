@@ -20,12 +20,12 @@ o.spec('Integration: Tuition', () => {
     flow = await createTestFlow(flowCode)
   })
 
-  async function promptExists(blockNum, query, count=1) {
+  async function promptExists(query, count=1) {
     count =
       count === true ? 1 :
       count === false ? 0 :
       count
-    o(await flow.promptCount(blockNum, query)).equals(count)
+    o(await flow.promptCount(query)).equals(count)
   }
 
   async function effectExists(query, count=1) {
@@ -38,33 +38,37 @@ o.spec('Integration: Tuition', () => {
 
   o('Detects staff', async () => {
     await flow.init(staff.address, 10, { signer: staff })
-    await promptExists(10, `button('Owner', _)`)
-    await promptExists(10, `text('You are staff')`, false)
-    await promptExists(10, `text('You are not staff')`)
+    await promptExists(`button('Owner', _)`)
+    await promptExists(`text('You are staff')`, false)
+    await promptExists(`text('You are not staff')`)
 
     // Update state, then ensure prompt changed
     await owner.call(contract, 'manageStaff(address,bool)', [staff.address, true])
     o(await owner.get(contract, 'isStaff(address): bool', [staff.address])).deepEquals([true]) // Sanity check
 
-    await promptExists(11, `button('Owner', _)`)
-    await promptExists(11, `text('You are staff')`)
-    await promptExists(11, `text('You are not staff')`, false)
+    flow.setBlockNumber(11)
+
+    await promptExists(`button('Owner', _)`)
+    await promptExists(`text('You are staff')`)
+    await promptExists(`text('You are not staff')`, false)
   })
 
   o('Detects non-staff non-admin', async () => {
     await flow.init(student.address, 10, { signer: student })
-    await promptExists(10, `button('Pay Deposit', _)`)
+    await promptExists(`button('Pay Deposit', _)`)
 
-    const [{ Actions }] = await flow.matchPrompts(10, `button('Pay Deposit', Actions)`, 'Actions')
+    const [{ Actions }] = await flow.matchPrompts(`button('Pay Deposit', Actions)`, 'Actions')
     await flow.execute(Actions)
 
-    await promptExists(11, `button('Pay Deposit', _)`, false)
-    await promptExists(11, `text('Congratulations! Your deposit has been registered.')`)
+    flow.setBlockNumber(11)
+
+    await promptExists(`button('Pay Deposit', _)`, false)
+    await promptExists(`text('Congratulations! Your deposit has been registered.')`)
   })
 
   o('Gets owner address', async () => {
     await flow.init(staff.address, 10, { signer: staff })
-    const [{ Actions }] = await flow.matchPrompts(10, `button('Owner', Actions)`, 'Actions')
+    const [{ Actions }] = await flow.matchPrompts(`button('Owner', Actions)`, 'Actions')
     // console.log("Executing", Actions)
 
     const result = await flow.execute(Actions)

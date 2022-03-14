@@ -15,7 +15,7 @@ o.spec('Declarative Helpers', () => {
 
   o('prompt_once/1', async () => {
     const flow = await make(`prompt :- prompt_once(x), show foo.`)
-    o((await flow.matchPrompts(10, `foo`, 'Out')).length).equals(1)
-    o((await flow.matchPrompts(10, `foo`, 'Out')).length).equals(0)
+    o((await flow.matchPrompts( `foo`, 'Out')).length).equals(1)
+    o((await flow.matchPrompts( `foo`, 'Out')).length).equals(0)
   })
 })

@@ -19,7 +19,7 @@ o.spec('General', () => {
       prompt :- show [e, f].
       prompt :- show g.
     `)
-    const prompts = await flow.getPrompts(10)
+    const prompts = await flow.getPrompts()
     o(prompts).deepEquals(['a', 'b', 'c', 'd', 'e', 'f', 'g'])
   })
 })
