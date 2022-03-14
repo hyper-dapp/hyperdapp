@@ -5,7 +5,7 @@ o.spec('HTTP calls', () => {
 
   async function make(flowCode, onCallHttp) {
     const flow = await createFlow(flowCode, { onCallHttp })
-    await flow.init({ address: '0xbeef' })
+    await flow.init('0xbeef', 10)
     return flow
   }
 

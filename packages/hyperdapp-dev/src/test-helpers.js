@@ -86,16 +86,29 @@ export function generateFlowCode(flowFileRelative, interpolations={}) {
 
 export async function createTestFlow(code) {
   return await createFlow(code, {
-    async onCallFn({ signer, contractAddress, functionSig, args, returnType, value, mutability }) {
-      // TODO: Cache view functions by block
+    async onCallFn({ env, block, contractAddress, functionSig, args, paramTypes, returnType, value, mutability }) {
+      const cacheKey = functionSig + (
+        paramTypes.length == 0
+        ? ''
+        : AbiCoder.encode(paramTypes, args)
+      )
+      // console.log("Cache key", cacheKey)
+
+      if (mutability.view && block.cache[cacheKey]) {
+        // console.log("onCallFn (cache hit)", functionSig, contractAddress)
+        return block.cache[cacheKey]
+      }
+
       try {
         const callArgs = [contractAddress, returnType.length ? `${functionSig}: ${returnType[0]}` : functionSig, args]
-        if (mutability.view) {
-          return await signer.get(...callArgs)
-        }
-        else {
-          return (await signer.call(...callArgs, value)).returnValue
-        }
+        const result = (
+          mutability.view
+          ? await env.signer.get(...callArgs)
+          : (await env.signer.call(...callArgs, value)).returnValue
+        ).map(convertEthersContractCallResult)
+
+        block.cache[cacheKey] = result
+        return result
       }
       catch(err) {
         if (err instanceof EVM.RevertError) {
@@ -118,7 +131,7 @@ export async function createHardhatFlow(code, { debug, contracts, onCallHttp }={
 
     onCallHttp,
 
-    async onCallFn({ block, signer, contractAddress, functionSig, args, returnType, value, mutability }) {
+    async onCallFn({ block, env, contractAddress, functionSig, args, returnType, value, mutability }) {
       // TODO: Cache view functions by block
       const contract = contracts.find(c =>
         c.address.toLowerCase() === contractAddress.toLowerCase()
@@ -136,7 +149,7 @@ export async function createHardhatFlow(code, { debug, contracts, onCallHttp }={
         if (debug) {
           console.log("onCallFn", functionSig, !!contract.functions[functionSig], args)
         }
-        const result = await contract.connect(signer).functions[functionSig](...args)
+        const result = await contract.connect(env.signer).functions[functionSig](...args)
         return convertEthersContractCallResult(result)
       }
       catch(err) {
@@ -198,9 +211,7 @@ export class EVM {
       throw result.execResult.exceptionError
     }
 
-    // TODO: Support tuples
-    // console.log("Return value", AbiCoder.decode([returnType], result.execResult.returnValue))
-    return AbiCoder.decode([returnType], result.execResult.returnValue)
+    return AbiCoder.decode(returnTypeForAbiEncoder(returnType), result.execResult.returnValue)
   }
 
   async call(accountIndex, contract, fnSigAndMaybeReturnType, args, value) {
@@ -215,9 +226,8 @@ export class EVM {
       value: '0x' + (value || 0n).toString(16),
     })
 
-    // TODO: Support tuples
     const returnValue = returnType
-      ? AbiCoder.decode([returnType], result.execResult.returnValue)
+      ? AbiCoder.decode(returnTypeForAbiEncoder(returnType), result.execResult.returnValue)
       : []
 
     return { tx, returnValue }
@@ -282,6 +292,14 @@ function getCalldata(fnSig, args) {
     `function ${fnSig}`
   ])
   return abi.getSighash(fnSig) + AbiCoder.encode(abi.functions[fnSig].inputs, args).slice(2)
+}
+
+function returnTypeForAbiEncoder(returnType) {
+  let match = returnType.match(/^tuple\((.*)\)$/)
+  if (match) {
+    return match[1].split(',')
+  }
+  return [returnType]
 }
 
 //

@@ -44,11 +44,35 @@ if_call(Terms)   :- call(Terms).
 
 or(X,Y) :- call(X) -> true; call(Y).
 
-prompt_list(Out) :-
+get_prompts(Prompts) :-
   findall(Prompt, prompt([], Prompt), PromptLists),
   foldl(append, PromptLists, [], Prompts0),
-  reverse(Prompts0, Prompts),
+  reverse(Prompts0, Prompts1),
+  resolve_hot_code(Prompts1, Prompts).
+
+prompt_list(Out) :-
+  get_prompts(Prompts),
   terms_to_list(Prompts, Out).
+
+
+resolve_hot_code([], []) :- !.
+
+resolve_hot_code([X|Xs], [Y|Ys]) :-
+  X =.. [Name | Args0],
+  member(Name, [row, col]), % Traverse wrapper elements
+  !,
+  resolve_hot_code(Args0, Args),
+  Y =.. [Name | Args],
+  resolve_hot_code(Xs, Ys).
+
+resolve_hot_code([button(Text, {Attrs0}, CB) | Xs], [button(Text, {Attrs}, CB) | Ys]) :-
+  comma_replace(enabled: Code, enabled: Bool, Attrs0, Attrs),
+  nonvar(Code), %% Code only remains a variable if a replacement was not found
+  !,
+  (call(Code) -> Bool = {true}; Bool = {false}),
+  resolve_hot_code(Xs, Ys).
+
+resolve_hot_code([X|Xs], [X|Ys]) :- resolve_hot_code(Xs, Ys).
 
 
 prompt_once(Key) :-
@@ -86,18 +110,30 @@ register_oracles :-
 %% post_init :- abi(id, fns), ...
 
 
-ctx_get(Key, Value) :- prop(context, Top), get_(Top, Key, Value).
+ctx_get(Key, Value) :- path_flat(Key, Path), prop(context, Top), get_(Top, Path, Value).
 
-get(Key, Value) :- prop(context, Top), get_(Top, Key, Value), !.
-get(Key, Value) :- prop(uiState, Top), get_(Top, Key, Value), !.
+get(Key, Value) :-
+  path_flat(Key, Path),
+  get_(Path, Value).
 
-get_(Top, Ns/Key, Value) :-
+%% Scope input/... keys to inputState
+%%
+get_([input | Path], Value) :-
   !,
-  get_(Top, Ns, NsObj),
-  prop(NsObj, Key, Value).
+  prop(inputState, Top),
+  get_(Top, Path, Value).
 
-get_(Top, TopLevelKey, Value) :-
-  prop(Top, TopLevelKey, Value).
+get_(Path, Value) :-
+  member(TopKey, [context, uiState]),
+  prop(TopKey, Top),
+  get_(Top, Path, Value),
+  !.
+
+get_(Obj, [Key | Rest], Value) :-
+  prop(Obj, Key, Next),
+  get_(Next, Rest, Value).
+
+get_(Value, [], Value).
 
 set(Path0, Value) :-
   path_flat(Path0, Path),
@@ -114,9 +150,9 @@ path_list(A, [A]).
 %% Contract function calls
 %%
 call_fn(Contract, Calldata, Result) :-
-  call_fn(Contract, Calldata, Result, []).
+  call_fn(Contract, Calldata, [], Result).
 
-call_fn(Contract, Calldata, Result, Options0) :-
+call_fn(Contract, Calldata, Options0, Result) :-
   parse_call_fn_options(ctx(Contract, Calldata), Options0, Options),
   ground(Contract) ?? contract_not_ground(Contract),
   ground(Calldata) ?? calldata_not_ground(Contract, Calldata),
@@ -141,14 +177,14 @@ call_fn(Contract, Calldata, Result, Options0) :-
   fn_sig_atom(Fn, ParamsTypes, FnSigAtom),
   apply(callFn, [Addr, FnSigAtom, Mut, ParamsTypes, Args, Ret, Opts], Result).
 
-%% TODO: Switch to [key: value] syntax
+%% TODO: Switch to { key: value } syntax
 %%
 parse_call_fn_options(Ctx, [X|Xs], [Y|Ys]) :-
   ground(X) ?? unground_fn_call_option(X, Ctx),
   (
     % TODO: Add more options here when needed
     value(eth(N0)) = X, number(N0) ?? invalid_fn_call_option(eth(N0), Ctx) ->
-      N is N0 * 10 ** 18,
+      N is N0 * 10.0 ** 18.0,
       Y = value(N);
     value(N) = X, number(N) ?? invalid_fn_call_option(N, Ctx) ->
       Y = X;
@@ -263,7 +299,8 @@ abi_fn(FnSig, FnSig, [], []).
 % TODO: Require non-mutability is listed first lexically
 %
 abi_fn_retmut(Xs / X, Ret, [X|Muts]) :-
-  is_mutability(X), !,
+  is_mutability(X),
+  !,
   abi_fn_retmut(Xs, Ret, Muts).
 
 abi_fn_retmut(Xs / X, X, Muts) :-
@@ -271,19 +308,22 @@ abi_fn_retmut(Xs / X, X, Muts) :-
   abi_fn_retmut(Xs, X, Muts).
 
 abi_fn_retmut(X, Ret, [X]) :-
-  is_mutability(X), !,
-    (ground(Ret) -> true; Ret = void).
+  is_mutability(X),
+  !,
+  (ground(Ret) -> true; Ret = void).
+
 abi_fn_retmut(X, X, []).
 
 
 is_mutability(X) :- member(X, [pure, view, payable]).
 
 
-prompt_exists(Query, Ps) :-
-  is_list(Ps),
+prompt_exists(Query, P) :-
+  P =.. [Name | Args],
+  member(Name, [row, col]), % Support wrapper elements
   !,
-  member(P, Ps),
-  prompt_exists(Query, P).
+  member(SubPrompt, Args),
+  prompt_exists(Query, SubPrompt).
 
 prompt_exists(Query, P) :-
   subsumes_term(Query, P),
@@ -294,7 +334,8 @@ term_to_list(X, Y) :-
   terms_to_list([X], [Y]).
 
 terms_to_list([X | Xs], [X | Ys]) :-
-  \\+ compound(X), !,
+  (\\+ compound(X)) or member(X, [{true}, {false}, {null}, {undefined}]),
+  !,
   terms_to_list(Xs, Ys).
 
 terms_to_list([X | Xs], [['[list]'|Y] | Ys]) :-
@@ -330,6 +371,15 @@ list_to_terms([[Atom|Args0] | Ys], [X | Xs]) :-
 
 list_to_terms([], []).
 
+comma_member(X, (X, _)).
+comma_member(X, (_, Rest)) :- comma_member(X, Rest).
+comma_member(X, X) :- \+ X = (_, _).
+
+comma_replace(From, To, (From, Xs), (To, Ys)) :- !, comma_replace(From, To, Xs, Ys).
+comma_replace(From, To, (X,    Xs), (X,  Ys)) :- dif(X, From), comma_replace(From, To, Xs, Ys).
+comma_replace(From, To,         X,         Y) :-
+  \\+ X = (_, _),
+  (X = From -> Y = To; Y = X).
 
 ends_with(Ending, Atom) :- atom_concat(_, Ending, Atom).
 
@@ -354,8 +404,8 @@ execute_all_([Action | Rest]) :-
 
 execute_all_([]).
 
-log_message(Term) :-
-  assertz(effect(log_message(Term))).
+log(Term) :-
+  assertz(effect(log(Term))).
 
 
 %%

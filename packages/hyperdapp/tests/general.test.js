@@ -9,7 +9,7 @@ o.spec('General', () => {
         throw new Error('Not testing')
       }
     })
-    await flow.init({ address: '0x0' })
+    await flow.init('0x0', 10)
     return flow
   }
 

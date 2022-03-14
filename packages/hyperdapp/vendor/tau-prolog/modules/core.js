@@ -4194,8 +4194,8 @@ var pl = {
 			},
 			"*/2": {
 				type_args: null,
-				type_result: null,
-				fn: function( x, y, _ ) { return x * y; }
+				type_result: false,
+				fn: function( x, y, _ ) { return multiply(x, y); }
 			},
 			"//2": {
 				type_args: null,
@@ -5033,6 +5033,42 @@ function abs(n) {
 		?	(n < 0 ? n * -1n : n)
 		: Math.abs(n)
 }
+
+//
+// Helpers for dealing with float -> bigint multiplication
+//
+function parseDecimals(e) {
+    let eArray = e.toString().split(".")
+    return [
+      BigInt(eArray[0] + (eArray[1] ? eArray[1] : "")),
+      (eArray[1] ? eArray[1].length : 0),
+    ]
+}
+
+function multiply(x, y) {
+  let [a_int, a_dec] = parseDecimals(x)
+  let [b_int, b_dec] = parseDecimals(y)
+  let a_int_str = a_int.toString()
+  let b_int_str = b_int.toString()
+  let multiplier = getMultiplier(a_dec) * getMultiplier(b_dec)
+  let multiplier_str = multiplier.toString()
+  let ab;
+  if (a_int > b_int && a_int_str.length > multiplier_str.length) {
+    ab = a_int / multiplier * b_int
+  } else if (b_int > a_int && b_int_str.length > multiplier_str.length) {
+    ab = b_int / multiplier * a_int
+  } else if (b_int_str.length + a_int_str.length > multiplier_str.length) {
+    ab = a_int * b_int / multiplier
+  } else {
+    let missing = multiplier_str.length - (b_int_str.length + a_int_str.length) + 1
+    ab = a_int * b_int * getMultiplier(missing) / multiplier
+    /* This number can't be Integer anymore, so we transform the bigint into number */
+    ab = Number(ab) / Number(getMultiplier(missing))
+  }
+  return ab
+}
+
+const getMultiplier = e => 10n ** BigInt(e)
 
 // Built-in predicates
 pl.builtin = new Module("system", {
@@ -7008,6 +7044,27 @@ pl.builtin = new Module("system", {
 			} else {
 				var char1 = new Term( fromCodePoint( code.value ) );
 				thread.prepend( [new State( point.goal.replace( new Term( "=", [char1, char] ) ), point.substitution, point )] );
+			}
+		}
+	},
+
+	// char_code/2
+	"float_number/2": function( thread, point, atom ) {
+		var float = atom.args[0], num = atom.args[1];
+		if( pl.type.is_variable( float ) && pl.type.is_variable( num ) ) {
+			thread.throw_error( pl.error.instantiation( atom.indicator ) );
+		} else if( !pl.type.is_variable( float ) && !pl.type.is_float( float ) ) {
+			thread.throw_error( pl.error.type( "float", float, atom.indicator ) );
+		} else if( !pl.type.is_variable( num ) && !pl.type.is_integer( num ) ) {
+			thread.throw_error( pl.error.type( "integer", num, atom.indicator ) );
+		} else {
+			// new Num( parseInt(float, 10), true )
+			if( pl.type.is_variable( num ) ) {
+				var num1 = new Num( parseInt(float.value, 10), false );
+				thread.prepend( [new State( point.goal.replace( new Term( "=", [num1, num] ) ), point.substitution, point )] );
+			} else {
+				var float1 = new Num( num.value, true );
+				thread.prepend( [new State( point.goal.replace( new Term( "=", [float1, float] ) ), point.substitution, point )] );
 			}
 		}
 	},

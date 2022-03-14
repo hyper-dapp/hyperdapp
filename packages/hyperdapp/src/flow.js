@@ -9,6 +9,8 @@ importJsModule(prolog)
 importListsModule(prolog)
 importPromisesModule(prolog)
 
+let idCounter = 100
+
 export async function createFlow(flowCode, {
   onCallFn,
   onCallHttp,
@@ -40,20 +42,58 @@ export async function createFlow(flowCode, {
 
     uiState: {},
 
+    inputState: {},
+
     setUiState(path, value) {
-      // console.log("Setting", path, value)
       if (path.length === 0) {
         throw new Error('set/2 - No path provided')
       }
-      let current = env.uiState
-      for (let prop of path.slice(0, path.length-1)) {
-        if (current[prop] === undefined) {
-          current[prop] = {}
-        }
-        current = current[prop]
+      setValueInPath(env.uiState, path, value)
+    },
+
+    setInputValue(type, path, value) {
+      if (path.length === 0) {
+        throw new Error('[setInputValue] No path provided')
       }
-      const lastKey = path[path.length-1]
-      current[lastKey] = value
+
+      let cleanValue
+      if (type === 'address') {
+        if (! /^0x/.test(value) && value.length <= 40) {
+          value = '0x' + value
+        }
+        if (/^0x[0-9a-f]{40}/.test(value)) {
+          cleanValue = [value]
+        }
+      }
+      else if (type === 'eth') {
+        if (! /\..*$/) {
+          value = value + '.0'
+        }
+        if (/\.$/.test(value)) {
+          value = value + '0'
+        }
+        if (/^[0-9]+\.[0-9]$/.test(value)) {
+          cleanValue = [parseFloat(value)]
+        }
+      }
+      else if (type === 'string') {
+        if (!value) {
+          value = undefined
+        }
+        cleanValue = [value]
+      }
+      else {
+        const message = `[flow] Invalid input type '${type}' for '${path.join('/')}'`
+        console.error(message) // TODO: Figure out why Tau doesn't handle async errors correctly
+        throw new Error(message)
+      }
+
+      if (cleanValue) {
+        setValueInPath(env.inputState, path, cleanValue[0])
+      }
+      else {
+        console.warn(`[setInputValue] Ignoring invalid input '${value}' for '${path.join('/')}'`)
+      }
     },
 
     // For security, we only want to allow specifying addresses & oracles before and during init/1.
@@ -92,10 +132,10 @@ export async function createFlow(flowCode, {
       }
 
       const returnValue = await onCallFn({
+        env: callEnv,
         args,
         block: currentBlock,
         value,
-        signer: currentSigner,
         contractAddress: targetAddress,
         mutability: {
           view: mutability.includes('view'),
@@ -148,7 +188,7 @@ export async function createFlow(flowCode, {
   })()
 
 
-  let currentSigner = null
+  let callEnv = {}
   let currentBlock = { number: 0, cache: {} }
 
   function updateCurrentBlock(blockNum) {
@@ -168,9 +208,10 @@ export async function createFlow(flowCode, {
   }
 
   const api = {
+    id: idCounter++,
     init: tryCatchProlog(
-      async function init (signer, signerAddress, blockNum) {
-        currentSigner = signer
+      async function init (signerAddress, blockNum, callEnv_={}) {
+        callEnv = callEnv_
         env.context.me.address = signerAddress
 
         updateCurrentBlock(blockNum)
@@ -218,7 +259,7 @@ export async function createFlow(flowCode, {
         const selectQuery = selectVariable
           ? `, (term_to_list(${selectVariable}, ${selectVariable}Out) -> true; ${selectVariable}Out = ${selectVariable})`
           : ''
-        await session.promiseQuery(`prompt([], Prompt), prompt_exists(${matchQuery}, Prompt)${selectQuery}.`)
+        await session.promiseQuery(`get_prompts(Prompts), member(P, Prompts), prompt_exists(${matchQuery}, P)${selectQuery}.`)
 
         let answers = []
         for await (let answer of session.promiseAnswers()) {
@@ -250,14 +291,15 @@ export async function createFlow(flowCode, {
       return answerCount
     },
 
-    execute: tryCatchProlog(async function execute(actions) {
+    // TODO: Clone internal state somehow to make effects atomic
+    execute: tryCatchProlog(async function execute(actionTerms) {
       if (!env.context.__.hasInit) {
         console.warn("Hyperdapp flow has not init")
         return { effects: [] }
       }
-      // console.log('Executing', actions)
+      // console.log('Executing', actionTerms)
       const effects = []
-      await session.promiseQuery(`execute_all(${arrayToString(actions)}, Effects0), terms_to_list(Effects0, Effects).`)
+      await session.promiseQuery(`execute_all(${arrayToString(actionTerms)}, Effects0), terms_to_list(Effects0, Effects).`)
 
       for await (let answer of session.promiseAnswers()) {
         // Effects
@@ -267,6 +309,45 @@ export async function createFlow(flowCode, {
         effects.push(...newEffects)
       }
       return { effects }
+    }),
+
+
+    handleInput: tryCatchProlog(async function handleInput(nameTerm, value) {
+      if (!env.context.__.hasInit) {
+        console.warn("Hyperdapp flow has not init")
+        return
+      }
+      // console.log('Inputting', value, nameTerm)
+
+      await session.promiseQuery(`
+        list_to_term(${arrayToString(nameTerm)}, Name), %% Ex: [/, [/, a, b], b] -> /(/(a,b), c)
+        path_flat(Name, Path),  %% Ex: /(/(a,b), c) -> [a, b, c]
+        get_prompts(Prompts),
+        member(P, Prompts),
+        prompt_exists(input(Type, Name), P).
+      `)
+
+      const answers = []
+
+      for await (let answer of session.promiseAnswers()) {
+        // console.log('->>', session.format_answer(answer), answer)
+        // console.log('->>', answer)
+        answers.push({
+          type: answer.links.Type.toJavaScript({ quoted: true }),
+          namePath: answer.links.Path.toJavaScript({ quoted: true }),
+        })
+        // console.log('->>', answers[answers.length-1])
+      }
+
+      if (answers.length === 0) {
+        console.warn('[flow] No such input for name:', nameTerm)
+      }
+      else if (answers.length >= 2) {
+        console.warn('[flow] Duplicate inputs for name:', nameTerm, answers)
+      }
+
+      const input = answers[0]
+      env.setInputValue(input.type, input.namePath, value)
     }),
 
     query: tryCatchProlog(afterInit(
@@ -292,12 +373,17 @@ export async function createFlow(flowCode, {
   return api
 }
 
-function arrayToString(arr) {
-  if (Array.isArray(arr)) {
-    return `[${arr.map(arrayToString).join(',')}]`
+function arrayToString(x) {
+  if (Array.isArray(x)) {
+    return `[${x.map(arrayToString).join(',')}]`
+  }
+  else if (typeof x === 'number' || typeof x === 'bigint') {
+    return x
   }
   else {
-    return arr
+    return x.match(/^[a-z0-9'"]/i)
+      ? x
+      : `(${x})` // Wrap operators in parethesis in the rare case it's needed
   }
 }
 
@@ -322,5 +408,22 @@ function tryCatchProlog(fn) {
       }
       throw new Error(err.args[0].toJavaScript())
     }
+  }
+}
+
+function setValueInPath(obj, path, value) {
+  let current = obj
+  for (let prop of path.slice(0, path.length-1)) {
+    if (current[prop] === undefined) {
+      current[prop] = {}
+    }
+    current = current[prop]
+  }
+  const lastKey = path[path.length-1]
+  if (value === undefined) {
+    delete current[lastKey]
+  }
+  else {
+    current[lastKey] = value
   }
 }

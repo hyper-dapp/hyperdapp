@@ -62,7 +62,7 @@ student_prompt :-
 student_prompt :-
   has_paid(false),
   show button('Pay Deposit', [
-    call_fn(tuition, contribute, [], [value(eth(1))])
+    call_fn(tuition, contribute, [value(eth(1))], [])
   ]).
 
 student_prompt :-
@@ -100,5 +100,5 @@ is_owner(Bool) :-
 prompt :-
   show button('Owner', [
     call_fn(tuition, owner, [Addr]),
-    log_message(text('Owner address: ', Addr))
+    log(text('Owner address: ', Addr))
   ]).

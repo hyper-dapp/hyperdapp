@@ -5,7 +5,7 @@ o.spec('Function calls', () => {
 
   async function make(flowCode, onCallFn) {
     const flow = await createFlow(flowCode, { onCallFn })
-    await flow.init({ address: '0xbeef' })
+    await flow.init('0xbeef', 10)
     return flow
   }
 
@@ -45,5 +45,19 @@ o.spec('Function calls', () => {
     o(caughtParamTypes).deepEquals(['tuple(uint8,uint8)'])
   })
 
-  o('tuple output', async () => {})
+  o('tuple output', async () => {
+    const flow = await make(`
+        address(foo, '0xfeed').
+        abi(foo, [
+          half(uint): tuple(uint, uint)
+        ]).
+      `,
+      async function onCallFn({ args, paramTypes }) {
+        return [args[0] / 2n, args[0] / 2n]
+      }
+    )
+    const [{ X, Y }] = await flow.query(`call_fn(foo, half(30), [X, Y]).`)
+    o(X).equals(15n)
+    o(Y).equals(15n)
+  })
 })

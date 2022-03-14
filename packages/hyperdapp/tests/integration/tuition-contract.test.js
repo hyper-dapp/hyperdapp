@@ -37,7 +37,7 @@ o.spec('Integration: Tuition', () => {
   }
 
   o('Detects staff', async () => {
-    await flow.init(staff, staff.address, 10)
+    await flow.init(staff.address, 10, { signer: staff })
     await promptExists(10, `button('Owner', _)`)
     await promptExists(10, `text('You are staff')`, false)
     await promptExists(10, `text('You are not staff')`)
@@ -52,7 +52,7 @@ o.spec('Integration: Tuition', () => {
   })
 
   o('Detects non-staff non-admin', async () => {
-    await flow.init(student, student.address, 10)
+    await flow.init(student.address, 10, { signer: student })
     await promptExists(10, `button('Pay Deposit', _)`)
 
     const [{ Actions }] = await flow.matchPrompts(10, `button('Pay Deposit', Actions)`, 'Actions')
@@ -63,15 +63,15 @@ o.spec('Integration: Tuition', () => {
   })
 
   o('Gets owner address', async () => {
-    await flow.init(staff, staff.address, 10)
+    await flow.init(staff.address, 10, { signer: staff })
     const [{ Actions }] = await flow.matchPrompts(10, `button('Owner', Actions)`, 'Actions')
     // console.log("Executing", Actions)
 
     const result = await flow.execute(Actions)
-    o(result.effects[0][0]).equals('log_message')
+    o(result.effects[0][0]).equals('log')
     o(result.effects[0][1][2]).equals(`'${owner.address}'`)
 
-    await effectExists(`log_message(text(_, '${owner.address}'))`)
+    await effectExists(`log(text(_, '${owner.address}'))`)
   })
 })
 
