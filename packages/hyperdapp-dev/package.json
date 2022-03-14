@@ -1,6 +1,6 @@
 {
   "name": "hyperdapp-dev",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "description": "",
   "main": "index.js",
   "type": "module",
@@ -21,7 +21,7 @@
     "commander": "^9.0.0",
     "ethereumjs-util": "^7.1.4",
     "ethers": "^5.5.4",
-    "hyperdapp": "0.5.0",
+    "hyperdapp": "0.6.0",
     "lodash": "^4.17.21",
     "ospec": "^4.1.1"
   },
