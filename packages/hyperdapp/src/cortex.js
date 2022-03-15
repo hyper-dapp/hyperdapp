@@ -27,20 +27,19 @@ export const CORTEX_BASE_CODE = `
 %%
 %% DSL: if-then-else, or
 %%
-if(X) :- (if_then(X, Then) -> if_call(Then); true).
+if(X) :- (if_then(X, Then) -> call(Then); true).
 
 if_then(then(elseif(Try, Cond), MaybeThen), Then) :-
   !,
   (if_then(Try, Then) -> true; call(Cond), Then = MaybeThen).
+
 if_then(then(Cond, Then), Then)  :-
   !,
   call(Cond).
+
 if_then(else(Try, MaybeThen), Then) :-
   !,
   (if_then(Try, Then) -> true; Then = MaybeThen).
-
-if_call({Terms}) :- !, call(Terms).
-if_call(Terms)   :- call(Terms).
 
 or(X,Y) :- call(X) -> true; call(Y).
 

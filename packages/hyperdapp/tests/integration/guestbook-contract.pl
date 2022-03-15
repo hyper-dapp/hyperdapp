@@ -49,13 +49,13 @@ open_prompt :-
 
 open_guestbook :-
   get(input/owner, Owner),
-  if get_guestbook(Owner, Id) then {
+  if get_guestbook(Owner, Id) then (
     set(guestbookId, Id),
     set(tab, view)
-  }
-  else {
+  )
+  else (
     log(text('No such guestbook for that address.'))
-  }.
+  ).
 
 %%
 %% View Prompt
