@@ -337,6 +337,11 @@ serialize_term(X, X) :-
   (\\+ compound(X)) or member(X, [{true}, {false}, {null}, {undefined}]),
   !.
 
+serialize_term({CommaList}, Obj) :-
+  % Note: Ignores terms that don't match Key: Value syntax
+  findall(K-V, (comma_member(K: V0, CommaList), serialize_term(V0, V)), Pairs),
+  json_prolog(Obj, Pairs).
+
 serialize_term(X, ['[list]' | Y]) :-
   is_list(X),
   !,
@@ -346,6 +351,10 @@ serialize_term(X, [Atom | Args]) :-
   X =.. [Atom | Args0],
   maplist(serialize_term, Args0, Args).
 
+
+% TODO
+% Will need to implement once we switch call_fn syntax to use {}/1
+% deserialize_term(Obj, {CommaList}) :-
 
 deserialize_term(Y, Y) :- \\+ compound(Y), !.
 
@@ -360,7 +369,7 @@ deserialize_term([Atom | Args0], X) :-
 
 comma_member(X, (X, _)).
 comma_member(X, (_, Rest)) :- comma_member(X, Rest).
-comma_member(X, X) :- \+ X = (_, _).
+comma_member(X, X) :- \\+ X = (_, _).
 
 comma_replace(From, To, (From, Xs), (To, Ys)) :- !, comma_replace(From, To, Xs, Ys).
 comma_replace(From, To, (X,    Xs), (X,  Ys)) :- dif(X, From), comma_replace(From, To, Xs, Ys).

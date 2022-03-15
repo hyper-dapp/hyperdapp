@@ -67,16 +67,16 @@ o.spec('Integration: Guestbook', () => {
     await promptExists(`debug(viewing(_))`, false)
 
     // Button should NOT be enabled
-    const [{ E }] = await flow.matchPrompts(`button('Open Guestbook', { enabled: E }, _)`, 'E')
-    o(E).equals(false)
+    const [{ Attrs1 }] = await flow.matchPrompts(`button('Open Guestbook', Attrs1, _)`, 'Attrs1')
+    o(Attrs1.enabled).equals(false)
 
     // Input an address
     const [{ Name }] = await flow.matchPrompts(`input(address, Name)`, 'Name')
     await flow.handleInput(Name, bob.address)
 
     // Button should be enabled
-    const [{ E: E2 }] = await flow.matchPrompts(`button('Open Guestbook', { enabled: E }, _)`, 'E')
-    o(E2).equals(true)
+    const [{ Attrs2 }] = await flow.matchPrompts(`button('Open Guestbook', Attrs2, _)`, 'Attrs2')
+    o(Attrs2.enabled).equals(true)
 
 
     const [{ Action }] = await flow.matchPrompts(`button('Open Guestbook', _, Action)`, 'Action')
@@ -94,8 +94,8 @@ o.spec('Integration: Guestbook', () => {
     const [{ Name: NameMessage }] = await flow.matchPrompts(`input(string, Name)`, 'Name')
     await flow.handleInput(NameMessage, 'Good job!')
 
-    const [{ E: E3 }] = await flow.matchPrompts(`button('Submit', { enabled: E }, _)`, 'E')
-    o(E3).equals(true)
+    const [{ Attrs3 }] = await flow.matchPrompts(`button('Submit', Attrs3, _)`, 'Attrs3')
+    o(Attrs3.enabled).equals(true)
 
     const [{ Action: SubmitAction }] = await flow.matchPrompts(`button('Submit', _, Action)`, 'Action')
     await flow.execute(SubmitAction)
