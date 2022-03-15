@@ -38,7 +38,7 @@ o.spec('Integration: Tuition', () => {
 
   o('Detects staff', async () => {
     await flow.init(staff.address, 10, { signer: staff })
-    await promptExists(`button('Owner', _)`)
+    await promptExists(`button('Owner', _, _)`)
     await promptExists(`text('You are staff')`, false)
     await promptExists(`text('You are not staff')`)
 
@@ -48,27 +48,27 @@ o.spec('Integration: Tuition', () => {
 
     flow.setBlockNumber(11)
 
-    await promptExists(`button('Owner', _)`)
+    await promptExists(`button('Owner', _, _)`)
     await promptExists(`text('You are staff')`)
     await promptExists(`text('You are not staff')`, false)
   })
 
   o('Detects non-staff non-admin', async () => {
     await flow.init(student.address, 10, { signer: student })
-    await promptExists(`button('Pay Deposit', _)`)
+    await promptExists(`button('Pay Deposit', _, _)`)
 
-    const [{ Actions }] = await flow.matchPrompts(`button('Pay Deposit', Actions)`, 'Actions')
+    const [{ Actions }] = await flow.matchPrompts(`button('Pay Deposit', _, Actions)`, 'Actions')
     await flow.execute(Actions)
 
     flow.setBlockNumber(11)
 
-    await promptExists(`button('Pay Deposit', _)`, false)
+    await promptExists(`button('Pay Deposit', _, _)`, false)
     await promptExists(`text('Congratulations! Your deposit has been registered.')`)
   })
 
   o('Gets owner address', async () => {
     await flow.init(staff.address, 10, { signer: staff })
-    const [{ Actions }] = await flow.matchPrompts(`button('Owner', Actions)`, 'Actions')
+    const [{ Actions }] = await flow.matchPrompts(`button('Owner', _, Actions)`, 'Actions')
     // console.log("Executing", Actions)
 
     const result = await flow.execute(Actions)

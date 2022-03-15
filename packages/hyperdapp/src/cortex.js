@@ -48,31 +48,32 @@ get_prompts(Prompts) :-
   findall(Prompt, prompt([], Prompt), PromptLists),
   foldl(append, PromptLists, [], Prompts0),
   reverse(Prompts0, Prompts1),
-  resolve_hot_code(Prompts1, Prompts).
+  maplist(resolve_hot_data, Prompts1, Prompts).
 
 prompt_list(Out) :-
   get_prompts(Prompts),
   terms_to_list(Prompts, Out).
 
 
-resolve_hot_code([], []) :- !.
+resolve_hot_data([], []) :- !.
 
-resolve_hot_code([X|Xs], [Y|Ys]) :-
+%% Convert button/2 shorthand to button/3
+resolve_hot_data(button(Text, CB), Y) :- !, resolve_hot_data(button(Text, {}, CB), Y).
+
+resolve_hot_data(X, Y) :-
   X =.. [Name | Args0],
   member(Name, [row, col]), % Traverse wrapper elements
   !,
-  resolve_hot_code(Args0, Args),
-  Y =.. [Name | Args],
-  resolve_hot_code(Xs, Ys).
+  maplist(resolve_hot_data, Args0, Args),
+  Y =.. [Name | Args].
 
-resolve_hot_code([button(Text, {Attrs0}, CB) | Xs], [button(Text, {Attrs}, CB) | Ys]) :-
+resolve_hot_data(button(Text, {Attrs0}, CB), button(Text, {Attrs}, CB)) :-
   comma_replace(enabled: Code, enabled: Bool, Attrs0, Attrs),
   nonvar(Code), %% Code only remains a variable if a replacement was not found
   !,
-  (call(Code) -> Bool = {true}; Bool = {false}),
-  resolve_hot_code(Xs, Ys).
+  (call(Code) -> Bool = {true}; Bool = {false}).
 
-resolve_hot_code([X|Xs], [X|Ys]) :- resolve_hot_code(Xs, Ys).
+resolve_hot_data(X, X).
 
 
 prompt_once(Key) :-

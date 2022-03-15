@@ -38,8 +38,8 @@ o.spec('Integration: Guestbook', () => {
 
   o('Detects guestbook', async () => {
     await flow.init(alice.address, 10, { signer: alice })
-    await promptExists(`button('Create Guestbook', _)`)
-    await promptExists(`button('Open My Guestbook', _)`, false)
+    await promptExists(`button('Create Guestbook', _, _)`)
+    await promptExists(`button('Open My Guestbook', _, _)`, false)
 
     // Update state, then ensure prompt changed
     await alice.call(contract, 'create()', [])
@@ -50,8 +50,8 @@ o.spec('Integration: Guestbook', () => {
 
     flow.setBlockNumber(20)
 
-    await promptExists(`button('Create Guestbook', _)`, false)
-    await promptExists(`button('Open My Guestbook', _)`)
+    await promptExists(`button('Create Guestbook', _, _)`, false)
+    await promptExists(`button('Open My Guestbook', _, _)`)
   })
 
   o('Creates and displays an entry', async () => {
@@ -59,7 +59,7 @@ o.spec('Integration: Guestbook', () => {
     await bob.call(contract, 'create()', [])
 
     await flow.init(alice.address, 10, { signer: alice })
-    const [{ OpenAction }] = await flow.matchPrompts(`button('Open a Guestbook', OpenAction)`, 'OpenAction')
+    const [{ OpenAction }] = await flow.matchPrompts(`button('Open a Guestbook', _, OpenAction)`, 'OpenAction')
 
     await flow.execute(OpenAction)
 
