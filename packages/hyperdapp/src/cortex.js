@@ -51,7 +51,7 @@ get_prompts(Prompts) :-
 
 prompt_list(Out) :-
   get_prompts(Prompts),
-  terms_to_list(Prompts, Out).
+  maplist(serialize_term, Prompts, Out).
 
 
 resolve_hot_data([], []) :- !.
@@ -173,7 +173,7 @@ call_fn(Contract, Calldata, Options0, Result) :-
     !
   ) ?? 'ABI function not found',
 
-  terms_to_list(Options, Opts),
+  maplist(serialize_term, Options, Opts),
   fn_sig_atom(Fn, ParamsTypes, FnSigAtom),
   apply(callFn, [Addr, FnSigAtom, Mut, ParamsTypes, Args, Ret, Opts], Result).
 
@@ -330,46 +330,33 @@ prompt_exists(Query, P) :-
   Query = P.
 
 
-term_to_list(X, Y) :-
-  terms_to_list([X], [Y]).
-
-terms_to_list([X | Xs], [X | Ys]) :-
+%%
+%% Serialize to / deseralize from JavaScript terms
+%%
+serialize_term(X, X) :-
   (\\+ compound(X)) or member(X, [{true}, {false}, {null}, {undefined}]),
+  !.
+
+serialize_term(X, ['[list]' | Y]) :-
+  is_list(X),
   !,
-  terms_to_list(Xs, Ys).
+  maplist(serialize_term, X, Y).
 
-terms_to_list([X | Xs], [['[list]'|Y] | Ys]) :-
-  is_list(X), !,
-  terms_to_list(X, Y),
-  terms_to_list(Xs, Ys).
-
-terms_to_list([X | Xs], [[Atom|Args] | Ys]) :-
+serialize_term(X, [Atom | Args]) :-
   X =.. [Atom | Args0],
-  terms_to_list(Args0, Args),
-  terms_to_list(Xs, Ys).
-
-terms_to_list([], []).
+  maplist(serialize_term, Args0, Args).
 
 
-list_to_term(X, Y) :-
-  list_to_terms([X], [Y]).
+deserialize_term(Y, Y) :- \\+ compound(Y), !.
 
-list_to_terms([Y | Ys], [Y | Xs]) :-
-  \\+ compound(Y),
+deserialize_term(['[list]' | ListItems0], ListItems) :-
   !,
-  list_to_terms(Ys, Xs).
+  maplist(deserialize_term, ListItems0, ListItems).
 
-list_to_terms([['[list]'|ListItems0] | Ys], [ListItems | Xs]) :-
-  !,
-  list_to_terms(ListItems0, ListItems),
-  list_to_terms(Ys, Xs).
+deserialize_term([Atom | Args0], X) :-
+  maplist(deserialize_term, Args0, Args),
+  X =.. [Atom | Args].
 
-list_to_terms([[Atom|Args0] | Ys], [X | Xs]) :-
-  list_to_terms(Args0, Args),
-  X =.. [Atom | Args],
-  list_to_terms(Ys, Xs).
-
-list_to_terms([], []).
 
 comma_member(X, (X, _)).
 comma_member(X, (_, Rest)) :- comma_member(X, Rest).
@@ -394,7 +381,7 @@ ends_with(Ending, Atom) :- atom_concat(_, Ending, Atom).
 execute_all(Payload, Effects) :-
   retractall(effect(_)),
   (['[list]' | ActionLists] = Payload) ?? invalid_actions_1(Payload),
-  list_to_terms(ActionLists, Actions) ?? invalid_actions_2(ActionLists),
+  maplist(deserialize_term, ActionLists, Actions) ?? invalid_actions_2(ActionLists),
   execute_all_(Actions),
   findall(E, effect(E), Effects).
 

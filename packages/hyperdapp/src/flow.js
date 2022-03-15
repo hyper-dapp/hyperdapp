@@ -253,7 +253,7 @@ export async function createFlow(flowCode, {
     matchPrompts: tryCatchProlog(afterInit(
       async function matchPrompts(matchQuery, selectVariable) {
         const selectQuery = selectVariable
-          ? `, (term_to_list(${selectVariable}, ${selectVariable}Out) -> true; ${selectVariable}Out = ${selectVariable})`
+          ? `, (serialize_term(${selectVariable}, ${selectVariable}Out) -> true; ${selectVariable}Out = ${selectVariable})`
           : ''
         await session.promiseQuery(`get_prompts(Prompts), member(P, Prompts), prompt_exists(${matchQuery}, P)${selectQuery}.`)
 
@@ -295,7 +295,7 @@ export async function createFlow(flowCode, {
       }
       // console.log('Executing', actionTerms)
       const effects = []
-      await session.promiseQuery(`execute_all(${arrayToString(actionTerms)}, Effects0), terms_to_list(Effects0, Effects).`)
+      await session.promiseQuery(`execute_all(${arrayToString(actionTerms)}, Effects0), maplist(serialize_term, Effects0, Effects).`)
 
       for await (let answer of session.promiseAnswers()) {
         // Effects
@@ -316,7 +316,7 @@ export async function createFlow(flowCode, {
       // console.log('Inputting', value, nameTerm)
 
       await session.promiseQuery(`
-        list_to_term(${arrayToString(nameTerm)}, Name), %% Ex: [/, [/, a, b], b] -> /(/(a,b), c)
+        deserialize_term(${arrayToString(nameTerm)}, Name), %% Ex: [/, [/, a, b], b] -> /(/(a,b), c)
         path_flat(Name, Path),  %% Ex: /(/(a,b), c) -> [a, b, c]
         get_prompts(Prompts),
         member(P, Prompts),
