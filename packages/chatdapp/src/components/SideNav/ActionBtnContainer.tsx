@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { MenuItem } from "primereact/menuitem";
 import ActionBtn from "./ActionBtn/ActionBtn";
 import ActionDialog, { ActionDialogType } from "./ActionBtn/ActionDialog";
@@ -31,14 +31,14 @@ const ActionBtnContainer = () => {
   };
 
   return (
-    <Fragment>
+    <>
       <ActionBtn menuItems={menuItems} />
       <ActionDialog
         dialogType={dialogType}
         displayDialog={displayDialog}
         onHideDialog={onHideDialog}
       />
-    </Fragment>
+    </>
   );
 };
 

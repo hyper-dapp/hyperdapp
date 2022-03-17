@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { DateTime } from "luxon";
 import { useMoralis } from "react-moralis";
 import { getEllipsisTxt } from "../../../helpers/formatters";
@@ -29,7 +28,7 @@ const MessageBox = ({
   const { account } = useMoralis();
 
   const messageUI = (
-    <Fragment>
+    <>
       <div className="flex flex-col gap-2">
         <div className="text-xs text-gray-500 font-bold">
           {getEllipsisTxt(from)}
@@ -57,7 +56,7 @@ const MessageBox = ({
           onClick={() => window.open(link, "_blank")}
         />
       )}
-    </Fragment>
+    </>
   );
 
   const leftMessageBox = (

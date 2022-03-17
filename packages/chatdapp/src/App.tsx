@@ -1,9 +1,8 @@
-import { Fragment, useEffect } from "react";
+import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { useMoralis } from "react-moralis";
 import { ToastContainer } from "react-toastify";
 import Loader from "./components/Loader";
-import "./App.css";
 
 const App = () => {
   const { isWeb3Enabled, isWeb3EnableLoading, enableWeb3 } = useMoralis();
@@ -15,10 +14,10 @@ const App = () => {
   }, [isWeb3Enabled, isWeb3EnableLoading, enableWeb3]);
 
   return (
-    <div className="flex flex-col bg-gray-100 h-screen">
+    <div className="flex flex-col h-screen w-full bg-gray-100">
       {!isWeb3Enabled && <Loader />}
       {isWeb3Enabled && (
-        <Fragment>
+        <>
           <Outlet />
           <ToastContainer
             position="bottom-right"
@@ -31,7 +30,7 @@ const App = () => {
             draggable
             pauseOnHover
           />
-        </Fragment>
+        </>
       )}
     </div>
   );

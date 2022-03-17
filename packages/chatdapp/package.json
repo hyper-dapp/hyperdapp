@@ -14,7 +14,8 @@
     "@types/react-dom": "^17.0.0",
     "@walletconnect/web3-provider": "^1.7.1",
     "ethers": "^5.5.3",
-    "hyperdapp": "0.5.0",
+    "hyperdapp": "0.6.1",
+    "hyperdapp-dev": "0.6.0",
     "luxon": "^2.2.0",
     "moralis": "^0.0.184",
     "primeicons": "^5.0.0",
@@ -35,7 +36,7 @@
     "web-vitals": "^1.0.1"
   },
   "scripts": {
-    "start": "craco start",
+    "serve": "craco start",
     "build": "craco build",
     "test": "craco test",
     "eject": "react-scripts eject"
@@ -46,18 +47,11 @@
       "react-app/jest"
     ]
   },
-  "browserslist": {
-    "production": [
-      ">0.2%",
-      "not dead",
-      "not op_mini all"
-    ],
-    "development": [
-      "last 1 chrome version",
-      "last 1 firefox version",
-      "last 1 safari version"
-    ]
-  },
+  "browserslist": [
+    ">0.2%",
+    "not dead",
+    "not op_mini all"
+  ],
   "devDependencies": {
     "@types/identicon.js": "^2.3.1",
     "@types/luxon": "^2.0.8",

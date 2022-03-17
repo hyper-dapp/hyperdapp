@@ -17,20 +17,24 @@ const Login = () => {
   return (
     <div className="flex flex-col items-center justify-center h-full">
       <div
-        className="flex flex-col items-center gap-4 font-semibold border-2 rounded-xl shadow-xl p-5"
+        className="rounded-xl shadow-xl"
         style={{
           width: "550px",
           background: "#f8f9fa",
           border: "1px solid #dee2e6",
         }}
       >
-        <HyperdappLogo />
-        <p className="text-xl">Welcome to Hyperdapp!</p>
-        <p className="text-lg">We're happy to see you here 😁</p>
-        <WalletBtn />
-        <p className="font-normal text-sm">
-          You're connected to <strong>{networkName}</strong>
-        </p>
+        <div className="flex flex-col items-center w-full p-5 rounded-t-xl bg-gray-600">
+          <HyperdappLogo />
+        </div>
+        <div className="flex flex-col items-center gap-4 p-5 rounded-b-xl font-semibold">
+          <p className="text-xl">Welcome to Hyperdapp!</p>
+          <p className="text-lg">We're happy to see you here 😁</p>
+          <WalletBtn />
+          <p className="font-normal text-sm">
+            You're connected to <strong>{networkName}</strong>
+          </p>
+        </div>
       </div>
     </div>
   );

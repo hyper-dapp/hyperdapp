@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { Outlet } from "react-router-dom";
 import RequireAuth from "../../guards/RequireAuth";
 import Navbar from "../../components/NavBar/Navbar";
@@ -7,7 +6,7 @@ import SideNav from "../../components/SideNav/SideNav";
 const Home = () => {
   return (
     <RequireAuth>
-      <Fragment>
+      <>
         <Navbar />
         <div className="flex flex-row h-full w-full overflow-x-hidden text-gray-800">
           <SideNav />
@@ -17,7 +16,7 @@ const Home = () => {
             </div>
           </div>
         </div>
-      </Fragment>
+      </>
     </RequireAuth>
   );
 };

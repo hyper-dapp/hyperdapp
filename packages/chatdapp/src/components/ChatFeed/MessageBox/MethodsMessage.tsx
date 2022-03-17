@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { ChangeEvent, Fragment, useState } from "react";
+import { ChangeEvent, useState } from "react";
 import { useMoralis } from "react-moralis";
 import { useParams } from "react-router-dom";
 import { Button } from "primereact/button";
@@ -107,7 +107,7 @@ const MethodsMessage = ({ message }: MethodsMessageProps) => {
   };
 
   return (
-    <Fragment>
+    <>
       <div className="flex flex-wrap gap-5">{methodsList(message)}</div>
       {method && (
         <Dialog
@@ -147,7 +147,7 @@ const MethodsMessage = ({ message }: MethodsMessageProps) => {
           </div>
         </Dialog>
       )}
-    </Fragment>
+    </>
   );
 };
 

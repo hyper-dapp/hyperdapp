@@ -47,7 +47,7 @@ const ChatList = () => {
   }
 
   return (
-    <div className="flex flex-col h-96 overflow-y-scroll gap-2 mt-8">
+    <div className="flex flex-col h-96 overflow-y-auto gap-2 mt-8">
       {data.map((chat, i) => (
         <div
           key={i}

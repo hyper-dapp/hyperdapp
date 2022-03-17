@@ -1,5 +1,5 @@
 import Moralis from "moralis";
-import { Fragment, ReactElement, useEffect, useRef, useState } from "react";
+import { ReactElement, useEffect, useRef, useState } from "react";
 import { Dialog } from "primereact/dialog";
 import { ChatType } from "../../models/chat.models";
 import {
@@ -37,9 +37,9 @@ const ChatFeed = (props: ChatFeedProps) => {
     setReceiver("");
   };
 
-  const getMessageSender = (from: string | Moralis.User) => {
+  const getMessageSender = (from: any) => {
     if (typeof from === "string") return from;
-    return from.get("ethAddress");
+    return (from as any).ethAddress;
   };
 
   const getConnectionStatus = (from: string | Moralis.User) => {
@@ -73,7 +73,7 @@ const ChatFeed = (props: ChatFeedProps) => {
   );
 
   return (
-    <Fragment>
+    <>
       <div className="flex flex-col h-full overflow-x-auto mb-4 relative">
         {!isLoading ? messagesList : <Loader />}
       </div>
@@ -88,7 +88,7 @@ const ChatFeed = (props: ChatFeedProps) => {
       >
         <WalletTransfer receiver={receiver} onHideDialog={onHideDialog} />
       </Dialog>
-    </Fragment>
+    </>
   );
 };
 

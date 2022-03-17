@@ -2,7 +2,7 @@ import axios from "axios";
 import { ContractMethodModels } from "../models/contract-method.models";
 import { networkConfigs } from "../helpers/networks";
 
-const apiKey = process.env.REACT_APP_ETHERSCAN_API_KEY as string;
+const apiKey = process.env["REACT_APP_ETHERSCAN_API_KEY"] as string;
 
 const fetchContractABI = async (
   chainId: string,

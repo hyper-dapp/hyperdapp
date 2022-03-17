@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { getEllipsisTxt } from "../helpers/formatters";
 import Blockie from "./Blockie";
 
@@ -64,7 +64,7 @@ const Address = (props: AddressProps) => {
   const text = <p className={textStyles || ""}>{getEllipsisTxt(address)}</p>;
 
   return (
-    <Fragment>
+    <>
       {avatar === "top" && (
         <div className="flex flex-col items-center gap-2">
           {identicon}
@@ -97,7 +97,7 @@ const Address = (props: AddressProps) => {
           {identicon}
         </div>
       )}
-    </Fragment>
+    </>
   );
 };
 

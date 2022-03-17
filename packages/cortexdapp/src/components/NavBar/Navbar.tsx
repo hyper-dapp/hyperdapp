@@ -1,6 +1,6 @@
-import WalletBtn from "./WalletBtn";
-import { Menubar } from "primereact/menubar";
 import { useNavigate } from "react-router-dom";
+import { Menubar } from "primereact/menubar";
+import WalletBtn from "./WalletBtn";
 
 const Navbar = () => {
   const navigate = useNavigate();

@@ -1,3 +1,4 @@
+import { unescapeString } from "hyperdapp";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useChain } from "react-moralis";
@@ -9,7 +10,6 @@ import { sendMessage, setMessagesState } from "../../store/slices/messages";
 import { getExplorer } from "../../helpers/networks";
 import { ContractEvent } from "../../models/contract-event";
 import { MethodStateMutability } from "../../models/contract-method";
-import { unescapeString } from "hyperdapp";
 import { MessageModel } from "../../models/message.models";
 
 const filterMethods = (

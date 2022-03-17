@@ -45,7 +45,7 @@ const RoomChatFeed = () => {
   }, [chatId, dispatch, user]);
 
   return (
-    <div className="flex flex-col h-full overflow-x-auto mb-4 relative">
+    <div className="flex flex-col h-full overflow-x-auto relative">
       {chatId && (
         <ChatFeed
           chatType={ChatType.ROOM}

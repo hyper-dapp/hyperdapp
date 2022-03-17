@@ -1,6 +1,6 @@
+import { createFlow } from "hyperdapp";
 import { ethers } from "ethers";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
-import { createFlow } from "hyperdapp";
 // @ts-ignore
 import contractPrologProgram from "../../prolog/tuition-contract.pl";
 

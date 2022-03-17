@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { useMoralis, useChain } from "react-moralis";
 import { toast } from "react-toastify";
 import { Button } from "primereact/button";
@@ -107,7 +107,7 @@ const TransferForm = (props: TransferFormProps) => {
   };
 
   return (
-    <Fragment>
+    <>
       <div className="flex flex-col gap-5">
         <div className="flex flex-row items-center">
           <span className="font-bold w-1/5">Address:</span>
@@ -158,7 +158,7 @@ const TransferForm = (props: TransferFormProps) => {
           disabled={isFormInvalid}
         />
       </div>
-    </Fragment>
+    </>
   );
 };
 

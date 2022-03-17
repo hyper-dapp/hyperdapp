@@ -4,11 +4,6 @@ import { BrowserRouter, Navigate, Routes, Route } from "react-router-dom";
 import { Provider } from "react-redux";
 import { MoralisProvider } from "react-moralis";
 import PrimeReact from "primereact/api";
-import "react-toastify/dist/ReactToastify.min.css";
-import "primereact/resources/themes/bootstrap4-light-blue/theme.css";
-import "primereact/resources/primereact.min.css";
-import "primeicons/primeicons.css";
-import "./index.css";
 import store from "./store/store";
 import Home from "./routes/Home";
 import Cortex from "./routes/Cortex/Cortex";
@@ -16,10 +11,11 @@ import CortexContracts from "./routes/Cortex/CortexContracts";
 import CortexVariables from "./routes/Cortex/CortexVariables";
 import CortexEditor from "./routes/Cortex/CortexEditor";
 import App from "./App";
+import "./index.css";
 import reportWebVitals from "./reportWebVitals";
 
-const appId = process.env.REACT_APP_MORALIS_APPLICATION_ID as string;
-const serverUrl = process.env.REACT_APP_MORALIS_SERVER_URL as string;
+const appId = process.env["REACT_APP_MORALIS_APP_ID"] as string;
+const serverUrl = process.env["REACT_APP_MORALIS_SERVER_URL"] as string;
 
 PrimeReact.appendTo = "self";
 

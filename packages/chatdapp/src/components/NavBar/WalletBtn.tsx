@@ -1,4 +1,4 @@
-import { Fragment, useState } from "react";
+import { useState } from "react";
 import { useMoralis, useChain } from "react-moralis";
 import { Button } from "primereact/button";
 import { Card } from "primereact/card";
@@ -34,9 +34,9 @@ const WalletBtn = () => {
   };
 
   return (
-    <Fragment>
+    <>
       <Button
-        className="p-button-outlined p-button-rounded"
+        className="hd-button p-button-outlined p-button-rounded"
         icon="pi pi-wallet"
         label={btnLabel}
         loading={isAuthenticating}
@@ -69,7 +69,7 @@ const WalletBtn = () => {
           </div>
         </Card>
       </Dialog>
-    </Fragment>
+    </>
   );
 };
 

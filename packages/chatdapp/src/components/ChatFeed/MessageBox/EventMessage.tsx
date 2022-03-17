@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { ethers } from "ethers";
 import { Chip } from "primereact/chip";
 import { ContractEvent } from "../../../models/contract-event";
@@ -32,12 +31,12 @@ const EventMessage = ({ message }: EventMessageProps) => {
   };
 
   return (
-    <Fragment>
+    <>
       <div className="text-base">{message.event}</div>
       <div className="flex flex-row gap-4">
         {getReturnValues(message.returnValues)}
       </div>
-    </Fragment>
+    </>
   );
 };
 

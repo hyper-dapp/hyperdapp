@@ -1,2 +1,2 @@
 declare module "hyperdapp";
-declare module "react-chat-elements";
+declare module "hyperdapp-dev";

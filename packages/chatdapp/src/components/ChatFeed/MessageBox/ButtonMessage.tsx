@@ -1,8 +1,8 @@
+import { unescapeString } from "hyperdapp";
 import { useParams } from "react-router-dom";
 import { Button } from "primereact/button";
 import { useAppDispatch, useAppSelector } from "../../../store/store";
 import { sendMessage } from "../../../store/slices/messages";
-import { unescapeString } from "hyperdapp";
 
 interface ButtonMessageProps {
   message: string[];

@@ -1,4 +1,3 @@
-import { Fragment } from "react";
 import { useMoralis, useNativeBalance } from "react-moralis";
 import { Divider } from "primereact/divider";
 import Address from "../../Address";
@@ -15,7 +14,7 @@ const WalletTransfer = (props: WalletTransferProps) => {
   const { data: balance } = useNativeBalance();
 
   return (
-    <Fragment>
+    <>
       <div className="flex flex-col items-center gap-2">
         <Address address={account} size={20} avatar="top" copyable />
         <div className="text-center font-bold whitespace-nowrap">
@@ -24,7 +23,7 @@ const WalletTransfer = (props: WalletTransferProps) => {
       </div>
       <Divider />
       <TransferForm receiver={receiver} onHideDialog={onHideDialog} />
-    </Fragment>
+    </>
   );
 };
 
