@@ -388,7 +388,7 @@ function serializeNonJsonValues(xs) {
     Array.isArray(x)
     ? serializeNonJsonValues(x)
     : typeof x === 'bigint'
-    ? x.toString() + 'n'
+    ? x.toString()
     : x
   )
 }

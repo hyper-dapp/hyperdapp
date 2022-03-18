@@ -23,6 +23,6 @@ o.spec('Big numbers', () => {
     const flow = await make(`prompt :- X is 8 + 2, show abc(X).`)
     const prompts = await flow.getPrompts()
     o(prompts.length).equals(1)
-    o(prompts[0]).deepEquals(['abc', '10n'])
+    o(prompts[0]).deepEquals(['abc', '10'])
   })
 })
