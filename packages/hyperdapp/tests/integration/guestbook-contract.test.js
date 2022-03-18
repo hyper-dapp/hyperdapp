@@ -72,7 +72,7 @@ o.spec('Integration: Guestbook', () => {
 
     // Input an address
     const [{ Name }] = await flow.matchPrompts(`input(address, Name)`, 'Name')
-    await flow.handleInput(Name, bob.address)
+    o(await flow.handleInput(Name, bob.address)).equals(true)
 
     // Button should be enabled
     const [{ Attrs2 }] = await flow.matchPrompts(`button('Open Guestbook', Attrs2, _)`, 'Attrs2')

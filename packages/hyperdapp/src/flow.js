@@ -51,9 +51,11 @@ export async function createFlow(flowCode, {
       setValueInPath(env.uiState, path, value)
     },
 
+    // Goal: Only assign valid values
+    // Returns true if something changed
     setInputValue(type, path, value) {
       if (path.length === 0) {
-        throw new Error('[setInputValue] No path provided')
+        return false
       }
 
       let cleanValue
@@ -83,17 +85,18 @@ export async function createFlow(flowCode, {
         cleanValue = [value]
       }
       else {
-        const message = `[flow] Invalid input type '${type}' for '${path.join('/')}'`
-        console.error(message) // TODO: Figure out why Tau doesn't handle async errors correctly
-        throw new Error(message)
+        return false
       }
 
       if (cleanValue) {
         setValueInPath(env.inputState, path, cleanValue[0])
+        return true
       }
-      else {
-        console.warn(`[setInputValue] Ignoring invalid input '${value}' for '${path.join('/')}'`)
+      else if (getValueInPath(env.inputState, path)) {
+        setValueInPath(env.inputState, path, undefined)
+        return true
       }
+      return false
     },
 
     // For security, we only want to allow specifying addresses & oracles before and during init/1.
@@ -244,7 +247,7 @@ export async function createFlow(flowCode, {
           // console.log(prompts[prompts.length-1])
         }
         if (prompts.length >= 2) {
-          console.warn('Multiple prompt_list answers')
+          console.warn('Multiple prompt_list answers', prompts.map(arrayToString))
         }
         return prompts[0]
       }
@@ -343,7 +346,7 @@ export async function createFlow(flowCode, {
       }
 
       const input = answers[0]
-      env.setInputValue(input.type, input.namePath, value)
+      return env.setInputValue(input.type, input.namePath, value)
     }),
 
     query: tryCatchProlog(afterInit(
@@ -422,4 +425,16 @@ function setValueInPath(obj, path, value) {
   else {
     current[lastKey] = value
   }
+}
+
+function getValueInPath(obj, path) {
+  let current = obj
+  for (let prop of path.slice(0, path.length-1)) {
+    if (current[prop] === undefined) {
+      return undefined
+    }
+    current = current[prop]
+  }
+  const lastKey = path[path.length-1]
+  return current[lastKey]
 }
