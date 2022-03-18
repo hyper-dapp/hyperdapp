@@ -402,7 +402,10 @@ execute_all_([Action | Rest]) :-
 execute_all_([]).
 
 log(Term) :-
-  assertz(effect(log(Term))).
+  log(notice, Term).
+
+log(Type, Term) :-
+  assertz(effect(log(Type, Term))).
 
 
 %%
