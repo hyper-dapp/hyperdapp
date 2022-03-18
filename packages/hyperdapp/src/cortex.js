@@ -338,6 +338,7 @@ serialize_term(X, X) :-
   !.
 
 serialize_term({CommaList}, Obj) :-
+  !,
   % Note: Ignores terms that don't match Key: Value syntax
   findall(K-V, (comma_member(K: V0, CommaList), serialize_term(V0, V)), Pairs),
   json_prolog(Obj, Pairs).
