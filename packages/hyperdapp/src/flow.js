@@ -379,7 +379,11 @@ function arrayToString(x) {
   else if (typeof x === 'number' || typeof x === 'bigint') {
     return x
   }
+  else if (isObject(x)) {
+    return x
+  }
   else {
+    // Expected to be a string at this point
     return x.match(/^[a-z0-9'"]/i)
       ? x
       : `(${x})` // Wrap operators in parethesis in the rare case it's needed
@@ -437,4 +441,8 @@ function getValueInPath(obj, path) {
   }
   const lastKey = path[path.length-1]
   return current[lastKey]
+}
+
+function isObject(x) {
+  return Object.prototype.toString.call(x) === "[object Object]"
 }
