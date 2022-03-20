@@ -72,10 +72,9 @@ o.spec('Integration: Tuition', () => {
     // console.log("Executing", Actions)
 
     const result = await flow.execute(Actions)
-    o(result.effects[0][0]).equals('log')
-    o(result.effects[0][1][2]).equals(`'${owner.address}'`)
+    o(result.effects[0]).deepEquals(['log', 'notice', ['text', "'Owner address: '", `'${owner.address}'`]])
 
-    await effectExists(`log(text(_, '${owner.address}'))`)
+    await effectExists(`log(notice, text(_, '${owner.address}'))`)
   })
 })
 
