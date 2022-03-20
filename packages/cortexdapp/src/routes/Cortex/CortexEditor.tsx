@@ -29,6 +29,7 @@ const nodeTypes = {
 
 const CortexEditor = () => {
   const { cortexId } = useParams();
+  const { isLoading } = useAppSelector((store) => store.cortex);
   const { elements, position, zoom } = useAppSelector(
     (store) => store.cortex.map[cortexId as string].flow
   );
@@ -111,7 +112,7 @@ const CortexEditor = () => {
         <>
           <div className="flex flex-row justify-between">
             <NodesBar />
-            <Button label="Save" onClick={onSave} />
+            <Button label="Publish" onClick={onSave} loading={isLoading} />
           </div>
           <div className="flex flex-col flex-auto h-full border-2 border-black">
             <ReactFlow

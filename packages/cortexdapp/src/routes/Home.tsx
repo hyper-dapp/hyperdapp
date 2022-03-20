@@ -56,7 +56,7 @@ const Home = () => {
         <>
           <p className="text-5xl mt-20">Welcome to HyperDapp! 🚀</p>
           <div className="flex flex-col gap-4 mt-24 text-3xl">
-            <p className="">You don't have any cortex defined yet.</p>
+            <p className="">You don't have any Cortex defined yet.</p>
             <div className="flex flex-row gap-8">
               <p>Start creating yours today.</p>
               <Button
