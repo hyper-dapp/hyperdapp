@@ -11,7 +11,7 @@ const Home = () => {
         <div className="flex flex-row h-full w-full overflow-x-hidden text-gray-800">
           <SideNav />
           <div className="flex flex-col flex-auto h-full">
-            <div className="flex flex-col flex-auto flex-shrink-0 bg-gray-100 h-full p-6">
+            <div className="flex flex-col flex-auto flex-shrink-0 h-full p-6">
               <Outlet />
             </div>
           </div>

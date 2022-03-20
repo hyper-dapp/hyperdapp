@@ -28,7 +28,7 @@ const Login = () => {
           <HyperdappLogo />
         </div>
         <div className="flex flex-col items-center gap-4 p-5 rounded-b-xl font-semibold">
-          <p className="text-xl">Welcome to Hyperdapp!</p>
+          <p className="text-xl">Welcome to HyperDapp!</p>
           <p className="text-lg">We're happy to see you here 😁</p>
           <WalletBtn />
           <p className="font-normal text-sm">

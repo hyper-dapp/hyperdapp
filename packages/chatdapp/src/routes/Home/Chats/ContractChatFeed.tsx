@@ -8,7 +8,11 @@ import { getChainName } from "../../../helpers/networks";
 import { getEllipsisTxt } from "../../../helpers/formatters";
 import { useAppDispatch, useAppSelector } from "../../../store/store";
 import { initContract } from "../../../store/slices/contracts";
-import { initFlow } from "../../../store/slices/flows";
+import {
+  guestbookAddr,
+  initFlow,
+  tuitionAddr,
+} from "../../../store/slices/flows";
 import ChatFeed from "../../../components/ChatFeed/ChatFeed";
 import ContractMessage from "../../../components/ChatFeed/ContractMessage";
 
@@ -24,7 +28,7 @@ const ContractChatFeed = () => {
     const initChatFeed = async () => {
       if (!contractId || !account || !network) return;
 
-      if (contractId === "0x3C1F9d85d20bCDBafc35c81898b95025576819E6") {
+      if ([tuitionAddr, guestbookAddr].includes(contractId.toLowerCase())) {
         await dispatch(initFlow(contractId));
         return;
       }

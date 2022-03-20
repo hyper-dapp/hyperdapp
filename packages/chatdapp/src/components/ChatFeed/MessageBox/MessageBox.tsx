@@ -35,7 +35,7 @@ const MessageBox = ({
         </div>
         {message_type === "text" && <div className="text-base">{message}</div>}
         {message_type === "button" && (
-          <ButtonMessage message={message as string[]} />
+          <ButtonMessage message={message as any[]} />
         )}
         {message_type === "method" && (
           <MethodsMessage message={message as ContractMethod[]} />

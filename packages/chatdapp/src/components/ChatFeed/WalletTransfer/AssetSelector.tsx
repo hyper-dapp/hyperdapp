@@ -60,9 +60,8 @@ const AssetSelector = ({ asset, setAsset }: any) => {
   };
 
   const itemTemplate = (item: Asset) => {
-    const assetBalance = parseFloat(
-      Moralis.Units.FromWei(item.balance, item.decimals).toFixed(6)
-    );
+    const assetBalance = Moralis.Units.FromWei(item.balance, item.decimals);
+
     const assetLogo =
       item.logo || "https://etherscan.io/images/main/empty-token.png";
 

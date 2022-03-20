@@ -37,12 +37,12 @@ const accessDropdown = [
     value: Access.PRIVATE,
   },
   {
-    label: "Private from existing contract",
+    label: "Private from existing contract (coming soon)",
     value: Access.PRIVATE_EXISTING_CONTRACT,
     disabled: true,
   },
   {
-    label: "Private from new contract",
+    label: "Private from new contract (coming soon)",
     value: Access.PRIVATE_NEW_CONTRACT,
     disabled: true,
   },

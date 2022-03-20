@@ -39,7 +39,7 @@ const ChatList = () => {
     return (
       <div className="flex flex-col gap-4 items-center p-4">
         <p>You're not part of any chat yet!</p>
-        <p className="font-bold">Start using Hyperdapp</p>
+        <p className="font-bold">Start using HyperDapp</p>
         <p>Create your first room today</p>
         <p className="text-3xl">🚀</p>
       </div>
@@ -51,9 +51,7 @@ const ChatList = () => {
       {data.map((chat, i) => (
         <div
           key={i}
-          className={`flex flex-row items-center gap-4 p-2${
-            chat.id === chatId ? " bg-gray-100" : ""
-          }`}
+          className="flex flex-row items-center gap-4 p-2"
           onClick={() =>
             navigate(
               `${

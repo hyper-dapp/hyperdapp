@@ -17,9 +17,9 @@ interface PartysliceHook {
   disconnectWallet(): Promise<void>;
 }
 
-const signingMessage = `Welcome to Hyperdapp! 
+const signingMessage = `Welcome to HyperDapp! 
 
-Please sign this message to log in Hyperdapp.
+Please sign this message to log in HyperDapp.
         
 This request will not trigger a blockchain transaction or cost any gas fees.
         

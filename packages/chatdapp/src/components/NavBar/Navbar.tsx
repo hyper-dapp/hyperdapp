@@ -6,7 +6,7 @@ const Navbar = () => {
   return (
     <Menubar
       className="hd-menubar bg-gray-600 border-0 rounded-none"
-      start={<HyperdappLogo />}
+      start={<HyperdappLogo clickable={true} />}
       end={<WalletBtn />}
     />
   );

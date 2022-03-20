@@ -11,6 +11,7 @@ import { getExplorer } from "../../helpers/networks";
 import { ContractEvent } from "../../models/contract-event";
 import { MethodStateMutability } from "../../models/contract-method";
 import { MessageModel } from "../../models/message.models";
+import { guestbookAddr, tuitionAddr } from "../../store/slices/flows";
 
 const filterMethods = (
   methods: { [key: string]: any },
@@ -34,7 +35,8 @@ const ContractMessage = () => {
 
   useEffect(() => {
     if (!contractId || !flow) return;
-    if (contractId !== "0x3C1F9d85d20bCDBafc35c81898b95025576819E6") return;
+    if (![tuitionAddr, guestbookAddr].includes(contractId.toLowerCase()))
+      return;
 
     const initPrompts = async () => {
       try {
@@ -45,7 +47,8 @@ const ContractMessage = () => {
             data: [],
           })
         );
-        const prompts = await flow.getPrompts(100);
+
+        const prompts = await flow.getPrompts();
         prompts.map(([type, ...args]: string[]) => {
           if (type === "text") {
             return dispatch(

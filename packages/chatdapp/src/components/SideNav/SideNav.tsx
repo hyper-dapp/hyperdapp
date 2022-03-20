@@ -12,7 +12,10 @@ const SideNav = () => {
   return (
     <>
       <div className="flex flex-col flex-shrink-0 w-64 bg-white">
-        <div className="flex flex-col items-center gap-2 w-full py-6 px-4 bg-hyperdapp">
+        <div
+          className="flex flex-col items-center gap-2 w-full py-6 px-4"
+          style={{ backgroundColor: "#07c8d6" }}
+        >
           <Address
             address={account}
             size={20}

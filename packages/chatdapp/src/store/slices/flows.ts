@@ -2,11 +2,18 @@ import { createFlow } from "hyperdapp";
 import { ethers } from "ethers";
 import { createAsyncThunk, createSlice } from "@reduxjs/toolkit";
 // @ts-ignore
-import contractPrologProgram from "../../prolog/tuition-contract.pl";
+import tuitionContract from "../../prolog/tuition-contract.pl";
+// @ts-ignore
+import guestbookContract from "../../prolog/guestbook-contract.pl";
 
 const { ethereum } = window as any;
 const provider = new ethers.providers.Web3Provider(ethereum);
 const signer = provider.getSigner();
+
+export const tuitionAddr =
+  "0x3C1F9d85d20bCDBafc35c81898b95025576819E6".toLowerCase();
+export const guestbookAddr =
+  "0x376D38fd8c0B54aBf937b2099969670F64918E1e".toLowerCase();
 
 interface IFlowSlice {
   [contractAddress: string]: any;
@@ -27,15 +34,19 @@ export const initFlow = createAsyncThunk(
   "flows/initFlow",
   async (contractAddress: string) => {
     try {
-      const code = (await (await fetch(contractPrologProgram)).text()).replace(
-        `{{contractAddress}}`,
-        contractAddress
-      );
+      let pl = "";
+
+      if (contractAddress.toLowerCase() === tuitionAddr) {
+        pl = await (await fetch(tuitionContract)).text();
+      } else if (contractAddress.toLowerCase() === guestbookAddr) {
+        pl = await (await fetch(guestbookContract)).text();
+      }
+
+      const code = pl.replace("{{contractAddr}}", contractAddress);
 
       const flow = await createFlow(code, {
         async onCallFn({
           block,
-          signer,
           contractAddress,
           functionSig,
           paramTypes,
@@ -98,7 +109,7 @@ export const initFlow = createAsyncThunk(
       });
 
       await connectToMetamask();
-      await flow.init(signer, await signer.getAddress(), 100);
+      await flow.init(await signer.getAddress(), 10, { signer, provider });
 
       return { contractAddress, flow };
     } catch (error) {}

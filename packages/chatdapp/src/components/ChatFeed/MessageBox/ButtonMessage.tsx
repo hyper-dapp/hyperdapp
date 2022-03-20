@@ -9,12 +9,12 @@ interface ButtonMessageProps {
 }
 
 const ButtonMessage = ({ message }: ButtonMessageProps) => {
-  const [btnText, actions] = message;
+  const [btnText, , actions] = message;
   const { contractId } = useParams();
   const flow = useAppSelector((store) => contractId && store.flows[contractId]);
   const dispatch = useAppDispatch();
 
-  const executeAction = async (actions: any) => {
+  const executeAction = async () => {
     if (!contractId) return;
 
     const { effects } = await flow.execute(actions);
@@ -35,7 +35,7 @@ const ButtonMessage = ({ message }: ButtonMessageProps) => {
     <Button
       className="p-2 bg-violet-600 text-white disabled:bg-gray-400"
       label={unescapeString(btnText)}
-      onClick={() => executeAction(actions)}
+      onClick={() => executeAction()}
     />
   );
 };
