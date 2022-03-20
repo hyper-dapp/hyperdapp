@@ -4,5 +4,14 @@
   "private": true,
   "workspaces": [
     "packages/*"
-  ]
+  ],
+  "scripts": {
+    "serve:chatdapp": "yarn build:hd-materials && yarn workspace chatdapp serve",
+    "serve:cortexdapp": "yarn build:hd-materials && yarn workspace cortexdapp serve",
+    "build:chatdapp": "yarn build:hd-materials && yarn workspace chatdapp build",
+    "build:cortexdapp": "yarn build:hd-materials && yarn workspace cortexdapp build",
+    "deploy:chatdapp": "yarn build:hd-materials && yarn workspace chatdapp build && yarn workspace chatdapp deploy",
+    "deploy:cortexdapp": "yarn build:hd-materials && yarn workspace cortexdapp build && yarn workspace cortexdapp deploy",
+    "build:hd-materials": "yarn workspace hd-materials build"
+  }
 }

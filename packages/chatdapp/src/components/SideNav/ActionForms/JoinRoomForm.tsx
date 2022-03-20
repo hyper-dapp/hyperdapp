@@ -1,3 +1,4 @@
+import { Address } from "hd-materials";
 import { useState } from "react";
 import { useNFTBalances } from "react-moralis";
 import {
@@ -5,7 +6,6 @@ import {
   AutoCompleteCompleteMethodParams,
 } from "primereact/autocomplete";
 import { Button } from "primereact/button";
-import Address from "../../Address";
 
 interface SelectedAddress {
   address: string;

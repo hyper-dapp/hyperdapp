@@ -1,9 +1,9 @@
+import { Blockie } from "hd-materials";
 import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "primereact/badge";
 import { Skeleton } from "primereact/skeleton";
 import { ChatType } from "../../models/chat.models";
 import { useAppSelector } from "../../store/store";
-import Blockie from "../Blockie";
 
 const ChatList = () => {
   const { chatId } = useParams();

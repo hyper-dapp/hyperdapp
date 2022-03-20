@@ -1,15 +1,7 @@
-import { useState } from "react";
-import { getEllipsisTxt } from "../helpers/formatters";
-import Blockie from "./Blockie";
-
-interface AddressProps {
-  address: string | null;
-  avatar?: "left" | "right" | "top" | "bottom";
-  copyable?: boolean;
-  size?: number | undefined;
-  scale?: number | undefined;
-  textStyles?: string;
-}
+import React, { FC, useState } from "react";
+import Blockie from "../Blockie";
+import { AddressProps } from "./Address.types";
+import { getEllipsisTxt } from "../../helpers";
 
 const check = (
   <svg
@@ -28,8 +20,14 @@ const check = (
   </svg>
 );
 
-const Address = (props: AddressProps) => {
-  const { address, avatar, copyable, size, scale, textStyles } = props;
+const Address: FC<AddressProps> = ({
+  address,
+  avatar,
+  copyable,
+  size,
+  scale,
+  textStyles,
+}) => {
   const [isClicked, setIsClicked] = useState(false);
 
   const copy = (
@@ -45,8 +43,10 @@ const Address = (props: AddressProps) => {
       strokeLinejoin="round"
       style={{ cursor: "pointer" }}
       onClick={async () => {
-        await navigator.clipboard.writeText(address as string);
+        if (!address) return;
+        await navigator.clipboard.writeText(address);
         setIsClicked(true);
+        setTimeout(() => setIsClicked(false), 1000);
       }}
     >
       <path stroke="none" d="M0 0h24v24H0z" fill="none" />

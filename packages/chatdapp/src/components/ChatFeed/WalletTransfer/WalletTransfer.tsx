@@ -1,6 +1,6 @@
+import { Address } from "hd-materials";
 import { useMoralis, useNativeBalance } from "react-moralis";
 import { Divider } from "primereact/divider";
-import Address from "../../Address";
 import TransferForm from "./TransferForm";
 
 interface WalletTransferProps {
