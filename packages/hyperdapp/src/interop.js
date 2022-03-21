@@ -1,6 +1,20 @@
 
-export function unescapeString(string) {
-  return string.replace(/^'/, '').replace(/'$/, '').replace(`\\'`, `'`)
+export function unescapeString(stringOrTerm) {
+  if (typeof stringOrTerm === 'string') {
+    return stringOrTerm.replace(/^'/, '').replace(/'$/, '').replace(`\\'`, `'`)
+  }
+  else if (stringOrTerm[0] === 'address') {
+    const addr = unescapeString(stringOrTerm[1])
+    return `${addr.slice(0, 6)}..${addr.slice(18, 22)}`
+  }
+  else if (stringOrTerm[0] === 'eth') {
+    const wei = stringOrTerm[1]
+    const [integer, decimals] =
+      wei.length >= 18
+      ? [wei.slice(0, wei.length - 18), wei.slice(wei.length - 18).slice(0, 5)]
+      : ['0', new Array(18 - wei.length).fill('0').join('') + wei.replace(/0+$/, '')]
+    return `${integer}.${decimals} ETH`
+  }
 }
 
 export function escapeAtom(string) {
