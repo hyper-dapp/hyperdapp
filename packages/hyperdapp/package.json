@@ -16,7 +16,7 @@
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "hyperdapp-dev": "0.6.0",
+    "hyperdapp-dev": "workspace:*",
     "ospec": "^4.1.1"
   }
 }
