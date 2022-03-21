@@ -1,9 +1,10 @@
+import { HdLoader, HdLogo } from "hd-materials";
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { useMoralis } from "react-moralis";
 import { ToastContainer } from "react-toastify";
-import Navbar from "./components/NavBar/Navbar";
-import Loader from "./components/Loader";
+import { Menubar } from "primereact/menubar";
+import WalletBtn from "./components/WalletBtn";
 
 const App = () => {
   const { isWeb3Enabled, isWeb3EnableLoading, enableWeb3 } = useMoralis();
@@ -16,10 +17,14 @@ const App = () => {
 
   return (
     <div className="flex flex-col h-screen w-full">
-      {!isWeb3Enabled && <Loader />}
+      {!isWeb3Enabled && <HdLoader />}
       {isWeb3Enabled && (
         <>
-          <Navbar />
+          <Menubar
+            className="hd-menubar bg-gray-600 border-0 rounded-none"
+            start={<HdLogo />}
+            end={<WalletBtn />}
+          />
           <div className="overflow-x-hidden overflow-y-auto w-full h-full">
             <Outlet />
           </div>

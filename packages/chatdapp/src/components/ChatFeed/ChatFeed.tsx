@@ -1,3 +1,4 @@
+import { HdLoader } from "hd-materials";
 import Moralis from "moralis";
 import { ReactElement, useEffect, useRef, useState } from "react";
 import { Dialog } from "primereact/dialog";
@@ -7,7 +8,6 @@ import {
   MessageModel,
 } from "../../models/message.models";
 import { useAppSelector } from "../../store/store";
-import Loader from "../Loader";
 import WalletTransfer from "./WalletTransfer/WalletTransfer";
 import MessageBox from "./MessageBox/MessageBox";
 
@@ -75,7 +75,7 @@ const ChatFeed = (props: ChatFeedProps) => {
   return (
     <>
       <div className="flex flex-col h-full overflow-x-auto mb-4 relative">
-        {!isLoading ? messagesList : <Loader />}
+        {!isLoading ? messagesList : <HdLoader />}
       </div>
       {userInputTemplate}
       <Dialog

@@ -1,3 +1,4 @@
+import { Address } from "hd-materials";
 import { useState } from "react";
 import { useChain, useMoralis } from "react-moralis";
 import { useNavigate } from "react-router-dom";
@@ -11,7 +12,6 @@ import { getEllipsisTxt } from "../../../helpers/formatters";
 import { useAppDispatch, useAppSelector } from "../../../store/store";
 import { getUser } from "../../../store/slices/users";
 import { saveChat } from "../../../store/slices/chats";
-import Address from "../../Address";
 
 enum Access {
   PUBLIC = "public",

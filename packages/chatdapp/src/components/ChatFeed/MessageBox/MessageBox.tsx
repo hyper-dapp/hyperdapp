@@ -1,8 +1,8 @@
+import { Blockie } from "hd-materials";
 import { DateTime } from "luxon";
 import { useMoralis } from "react-moralis";
 import { getEllipsisTxt } from "../../../helpers/formatters";
 import { MessageModel } from "../../../models/message.models";
-import Blockie from "../../Blockie";
 import ButtonMessage from "./ButtonMessage";
 import EventMessage from "./EventMessage";
 import MethodsMessage from "./MethodsMessage";

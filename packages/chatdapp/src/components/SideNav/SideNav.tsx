@@ -1,6 +1,6 @@
+import { Address } from "hd-materials";
 import { useChain, useMoralis } from "react-moralis";
 import { getChainName } from "../../helpers/networks";
-import Address from "../Address";
 import ActionBtnContainer from "./ActionBtnContainer";
 import ChatList from "./ChatList";
 

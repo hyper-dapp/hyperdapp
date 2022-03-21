@@ -1,3 +1,4 @@
+import { Blockie } from "hd-materials";
 import { useState } from "react";
 import { useMoralis, useChain } from "react-moralis";
 import { toast } from "react-toastify";
@@ -6,7 +7,6 @@ import { InputText } from "primereact/inputtext";
 import { TOAST_TXT } from "../../../models/toast.models";
 import { getEllipsisTxt } from "../../../helpers/formatters";
 import { getExplorer } from "../../../helpers/networks";
-import Blockie from "../../Blockie";
 import AssetSelector, { Asset } from "./AssetSelector";
 
 interface TransferPayload {

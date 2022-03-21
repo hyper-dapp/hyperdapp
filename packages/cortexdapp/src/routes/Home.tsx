@@ -1,3 +1,4 @@
+import { HdLoader } from "hd-materials";
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useChain, useMoralis } from "react-moralis";
@@ -11,7 +12,6 @@ import { CortexMoralisEntity, CortexPayload } from "../models/cortex.models";
 import { TOAST_TXT } from "../models/toast.models";
 import { useAppDispatch, useAppSelector } from "../store/store";
 import { getCortexList, saveCortex } from "../store/slices/cortex";
-import Loader from "../components/Loader";
 
 const Home = () => {
   const { user } = useMoralis();
@@ -51,7 +51,7 @@ const Home = () => {
 
   return (
     <div className="container mx-auto p-10 w-full h-full">
-      {isLoading && <Loader />}
+      {isLoading && <HdLoader />}
       {!isLoading && !cortexList.length && (
         <>
           <p className="text-5xl mt-20">Welcome to HyperDapp! 🚀</p>
