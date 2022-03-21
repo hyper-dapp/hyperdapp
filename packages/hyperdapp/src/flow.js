@@ -55,7 +55,7 @@ export async function createFlow(flowCode, {
     // Returns true if something changed
     setInputValue(type, path, value) {
       if (path.length === 0) {
-        return false
+        return null
       }
 
       let cleanValue
@@ -68,35 +68,38 @@ export async function createFlow(flowCode, {
         }
       }
       else if (type === 'eth') {
-        if (! /\..*$/) {
+        if (! /\./.test(value)) {
           value = value + '.0'
+        }
+        if (/^\./.test(value)) {
+          value = '0' + value
         }
         if (/\.$/.test(value)) {
           value = value + '0'
         }
-        if (/^[0-9]+\.[0-9]$/.test(value)) {
+        if (/^[0-9]+\.[0-9]+$/.test(value)) {
           cleanValue = [parseFloat(value)]
         }
       }
-      else if (type === 'string') {
+      else if (type === 'string' || type === 'text') {
         if (!value) {
           value = undefined
         }
         cleanValue = [value]
       }
       else {
-        return false
+        return null
       }
 
       if (cleanValue) {
         setValueInPath(env.inputState, path, cleanValue[0])
-        return true
+        return { value: cleanValue[0] }
       }
       else if (getValueInPath(env.inputState, path)) {
         setValueInPath(env.inputState, path, undefined)
-        return true
+        return { value: undefined }
       }
-      return false
+      return null
     },
 
     // For security, we only want to allow specifying addresses & oracles before and during init/1.
