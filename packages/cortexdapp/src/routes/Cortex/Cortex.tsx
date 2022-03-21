@@ -1,3 +1,4 @@
+import { HdLoader } from "hd-materials";
 import { useEffect, useMemo, useState } from "react";
 import { Outlet, useNavigate, useParams } from "react-router-dom";
 import { useChain, useMoralis } from "react-moralis";
@@ -7,7 +8,6 @@ import { CortexMoralisEntity } from "../../models/cortex.models";
 import { useAppDispatch } from "../../store/store";
 import { getContractABI } from "../../store/slices/contracts";
 import { getCortexData } from "../../store/slices/cortex";
-import Loader from "../../components/Loader";
 
 const Cortex = () => {
   const { cortexId } = useParams();
@@ -59,7 +59,7 @@ const Cortex = () => {
     <div className="flex flex-row w-full h-full">
       <Menu model={items} style={{ minWidth: "220px" }} />
       <div className="container mx-auto p-10 w-full h-full">
-        {isLoading && <Loader />}
+        {isLoading && <HdLoader />}
         {!isLoading && <Outlet />}
       </div>
     </div>

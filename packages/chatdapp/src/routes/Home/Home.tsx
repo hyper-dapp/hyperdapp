@@ -1,13 +1,19 @@
+import { HdLogo } from "hd-materials";
+import { Menubar } from "primereact/menubar";
 import { Outlet } from "react-router-dom";
 import RequireAuth from "../../guards/RequireAuth";
-import Navbar from "../../components/NavBar/Navbar";
 import SideNav from "../../components/SideNav/SideNav";
+import WalletBtn from "../../components/WalletBtn";
 
 const Home = () => {
   return (
     <RequireAuth>
       <>
-        <Navbar />
+        <Menubar
+          className="hd-menubar bg-gray-600 border-0 rounded-none"
+          start={<HdLogo />}
+          end={<WalletBtn />}
+        />
         <div className="flex flex-row h-full w-full overflow-x-hidden text-gray-800">
           <SideNav />
           <div className="flex flex-col flex-auto h-full">

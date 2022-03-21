@@ -1,8 +1,8 @@
+import { HdLogo } from "hd-materials";
 import { useChain, useMoralis } from "react-moralis";
 import { Navigate, useLocation } from "react-router-dom";
 import { getChainName } from "../helpers/networks";
-import HyperdappLogo from "../components/HyperdappLogo";
-import WalletBtn from "../components/NavBar/WalletBtn";
+import WalletBtn from "../components/WalletBtn";
 
 const Login = () => {
   const { isAuthenticated } = useMoralis();
@@ -25,7 +25,7 @@ const Login = () => {
         }}
       >
         <div className="flex flex-col items-center w-full p-5 rounded-t-xl bg-gray-600">
-          <HyperdappLogo />
+          <HdLogo />
         </div>
         <div className="flex flex-col items-center gap-4 p-5 rounded-b-xl font-semibold">
           <p className="text-xl">Welcome to HyperDapp!</p>

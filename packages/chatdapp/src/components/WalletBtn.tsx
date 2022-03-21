@@ -1,6 +1,6 @@
 import { WalletButton } from "hd-materials";
 import { useMoralis, useChain } from "react-moralis";
-import { useHyperdapp } from "../../hooks/useHyperdapp";
+import { useHyperdapp } from "../hooks/useHyperdapp";
 
 const WalletBtn = () => {
   const { isAuthenticated, isAuthenticating, account } = useMoralis();

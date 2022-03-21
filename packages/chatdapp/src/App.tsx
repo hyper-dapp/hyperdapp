@@ -1,8 +1,8 @@
+import { HdLoader } from "hd-materials";
 import { useEffect } from "react";
 import { Outlet } from "react-router-dom";
 import { useMoralis } from "react-moralis";
 import { ToastContainer } from "react-toastify";
-import Loader from "./components/Loader";
 
 const App = () => {
   const { isWeb3Enabled, isWeb3EnableLoading, enableWeb3 } = useMoralis();
@@ -15,7 +15,7 @@ const App = () => {
 
   return (
     <div className="flex flex-col h-screen w-full">
-      {!isWeb3Enabled && <Loader />}
+      {!isWeb3Enabled && <HdLoader />}
       {isWeb3Enabled && (
         <>
           <Outlet />
