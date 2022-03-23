@@ -1,4 +1,4 @@
-export * from "./prompts/components";
+export * from "./prompts";
 
 export { default as Address } from "./Address";
 export { default as Blockie } from "./Blockie";

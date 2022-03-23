@@ -9,11 +9,11 @@ import {
 import { Prompt, PromptEnum } from "../../types/prompt.types";
 import { RenderPromptsParams } from "./renderPrompts.types";
 import { ButtonArgs } from "../../components/ButtonPrompt/ButtonPrompts.types";
-import InputPrompt from "../../components/InputPrompt";
 import { InputArgs } from "../../components/InputPrompt/InputPrompt.types";
 import { LogArgs } from "../../components/LogPrompt/LogPrompt.types";
+import InputPrompt from "../../components/InputPrompt";
 
-export function renderPrompts(params: RenderPromptsParams): ReactChild[] {
+export const renderPrompts = (params: RenderPromptsParams): ReactChild[] => {
   const filtered = params.prompts.filter((p): p is Prompt => {
     const keep = typeof p !== "string";
     if (!keep) {
@@ -22,14 +22,14 @@ export function renderPrompts(params: RenderPromptsParams): ReactChild[] {
     return keep;
   });
 
-  return filtered.map(([type, ...args]) => {
+  return filtered.map(([type, ...args], index) => {
     const { className, flow, isLatest, executeBtnAction, onInputChange } =
       params;
 
     switch (type) {
       case PromptEnum.COL:
         return (
-          <ColPrompt className={className}>
+          <ColPrompt key={index} className={className}>
             {renderPrompts({ ...params, prompts: args }).map((prompt) => (
               <div className="flex flex-1 items-center justify-center">
                 {prompt}
@@ -39,7 +39,7 @@ export function renderPrompts(params: RenderPromptsParams): ReactChild[] {
         );
       case PromptEnum.ROW:
         return (
-          <RowPrompt className={className}>
+          <RowPrompt key={index} className={className}>
             {renderPrompts({ ...params, prompts: args }).map((prompt) => (
               <div className="flex flex-1 items-center justify-center">
                 {prompt}
@@ -50,13 +50,14 @@ export function renderPrompts(params: RenderPromptsParams): ReactChild[] {
       case PromptEnum.LOG:
         const [, logTerm] = args;
         return (
-          <LogPrompt args={args as LogArgs}>
+          <LogPrompt key={index} args={args as LogArgs}>
             {renderPrompts({ ...params, prompts: [logTerm] })}
           </LogPrompt>
         );
       case PromptEnum.BUTTON:
         return (
           <ButtonPrompt
+            key={index}
             args={args as ButtonArgs}
             className={className}
             isLatest={isLatest}
@@ -66,6 +67,7 @@ export function renderPrompts(params: RenderPromptsParams): ReactChild[] {
       case PromptEnum.INPUT:
         return (
           <InputPrompt
+            key={index}
             args={args as InputArgs}
             className={className}
             flow={flow}
@@ -74,13 +76,17 @@ export function renderPrompts(params: RenderPromptsParams): ReactChild[] {
           />
         );
       case PromptEnum.TEXT:
-        return <TextPrompt className={className} args={args} />;
+        return <TextPrompt key={index} args={args} className={className} />;
       case PromptEnum.DEBUG:
         console.log(`[prompt/debug]`, ...args);
         return <></>;
       default:
         console.warn(`[prompt/unrecognized-type]`, type, args);
-        return <div className={className}>Unrecognized type: {type}</div>;
+        return (
+          <div key={index} className={className}>
+            Unrecognized type: {type}
+          </div>
+        );
     }
   });
-}
+};

@@ -33,7 +33,7 @@ const SOLID_CHECK_CIRCLE = (
   />
 );
 
-function renderIcon(type: LogTypeEnum, className: string) {
+const renderIcon = (type: LogTypeEnum, className: string) => {
   return (
     <svg
       className={`h-5 w-5 ${className}`}
@@ -51,9 +51,9 @@ function renderIcon(type: LogTypeEnum, className: string) {
         : SOLID_INFORMATION_CIRCLE}
     </svg>
   );
-}
+};
 
-export function renderLog(logType: LogTypeEnum, content: any) {
+export const renderLog = (logType: LogTypeEnum, content: any) => {
   let styles: string[];
 
   switch (logType) {
@@ -93,9 +93,9 @@ export function renderLog(logType: LogTypeEnum, content: any) {
       <div className="flex">
         <div className="flex-shrink-0">{renderIcon(logType, iconColor)}</div>
         <div className="ml-3">
-          <p className={`text-sm ${textColor}`}>{content}</p>
+          <div className={`text-sm ${textColor}`}>{content}</div>
         </div>
       </div>
     </div>
   );
-}
+};
