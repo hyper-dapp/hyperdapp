@@ -19,7 +19,7 @@ const FlowChatFeed = () => {
       <div className="flex flex-col h-full overflow-x-auto relative">
         {isLoading && <div>Initializing flow code...</div>}
         {!isLoading && contractId && data && (
-          <PromptsList address={contractId} flow={data} layout="divider" />
+          <PromptsList address={contractId} flow={data} layout="chat" />
         )}
       </div>
     </>
