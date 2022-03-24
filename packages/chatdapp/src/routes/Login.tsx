@@ -1,14 +1,13 @@
-import { HdLogo } from "hd-materials";
+import { HdLogo, getChainName, Chains } from "hd-materials";
 import { useChain, useMoralis } from "react-moralis";
 import { Navigate, useLocation } from "react-router-dom";
-import { getChainName } from "../helpers/networks";
 import WalletBtn from "../components/WalletBtn";
 
 const Login = () => {
   const { isAuthenticated } = useMoralis();
   const { chainId } = useChain();
   const location = useLocation();
-  const networkName = getChainName(chainId).toUpperCase();
+  const networkName = getChainName(chainId as Chains).toUpperCase();
 
   if (isAuthenticated) {
     return <Navigate to="/" state={{ from: location }} replace />;

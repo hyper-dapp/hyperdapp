@@ -1,7 +1,7 @@
 import React, { FC } from "react";
 import { unescapeString } from "hyperdapp";
 import { Button } from "primereact/button";
-import { ButtonPromptsProps } from "./ButtonPrompts.types";
+import { ButtonPromptsProps } from "./ButtonPrompt.types";
 
 const btnClass = ({ size = "md" }: { size?: "md" | "lg" } = {}) => {
   let classes = "";

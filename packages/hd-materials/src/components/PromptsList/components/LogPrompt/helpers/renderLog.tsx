@@ -1,5 +1,5 @@
 import React from "react";
-import { LogTypeEnum } from "../../components/LogPrompt/LogPrompt.types";
+import { LogTypeEnum } from "../LogPrompt.types";
 
 const SOLID_EXCLAMATION = (
   <path

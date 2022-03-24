@@ -1,11 +1,7 @@
 import React, { FC } from "react";
-import {
-  InputArgs,
-  InputPromptProps,
-  InputTypeEnum,
-} from "./InputPrompt.types";
 import { InputText } from "primereact/inputtext";
 import { InputTextarea } from "primereact/inputtextarea";
+import { InputPromptProps, InputTypeEnum } from "./InputPrompt.types";
 
 const VALID_INPUT_TYPES = ["address", "eth", "text"];
 

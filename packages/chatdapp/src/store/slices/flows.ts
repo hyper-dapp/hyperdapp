@@ -16,10 +16,14 @@ export const guestbookAddr =
   "0x376D38fd8c0B54aBf937b2099969670F64918E1e".toLowerCase();
 
 interface IFlowSlice {
-  [contractAddress: string]: any;
+  isLoading: boolean;
+  data: any;
 }
 
-const initialState: IFlowSlice = {};
+const initialState: IFlowSlice = {
+  isLoading: false,
+  data: undefined,
+};
 
 async function connectToMetamask() {
   try {
@@ -111,7 +115,7 @@ export const initFlow = createAsyncThunk(
       await connectToMetamask();
       await flow.init(await signer.getAddress(), 10, { signer, provider });
 
-      return { contractAddress, flow };
+      return flow;
     } catch (error) {}
   }
 );
@@ -120,19 +124,22 @@ const contracts = createSlice({
   name: "flows",
   initialState,
   reducers: {
-    resetContractState() {
+    resetFlowState() {
       return initialState;
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(initFlow.fulfilled, (state, action) => {
-      if (!action.payload) return;
-      const { contractAddress } = action.payload;
-      state[contractAddress] = action.payload.flow;
-    });
+    builder
+      .addCase(initFlow.pending, (state, action) => {
+        state.isLoading = true;
+      })
+      .addCase(initFlow.fulfilled, (state, action) => {
+        state.isLoading = false;
+        state.data = action.payload;
+      });
   },
 });
 
 const { actions, reducer } = contracts;
-export const { resetContractState } = actions;
+export const { resetFlowState } = actions;
 export default reducer;

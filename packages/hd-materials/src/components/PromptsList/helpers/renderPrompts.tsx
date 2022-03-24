@@ -1,17 +1,14 @@
 import React, { ReactChild } from "react";
-import {
-  ButtonPrompt,
-  ColPrompt,
-  LogPrompt,
-  RowPrompt,
-  TextPrompt,
-} from "../../components";
-import { Prompt, PromptEnum } from "../../types/prompt.types";
-import { RenderPromptsParams } from "./renderPrompts.types";
-import { ButtonArgs } from "../../components/ButtonPrompt/ButtonPrompts.types";
-import { InputArgs } from "../../components/InputPrompt/InputPrompt.types";
-import { LogArgs } from "../../components/LogPrompt/LogPrompt.types";
-import InputPrompt from "../../components/InputPrompt";
+import { InputArgs } from "../components/InputPrompt/InputPrompt.types";
+import { ButtonArgs } from "../components/ButtonPrompt/ButtonPrompt.types";
+import { LogArgs } from "../components/LogPrompt/LogPrompt.types";
+import { Prompt, PromptEnum, RenderPromptsParams } from "../PromptsList.types";
+import ColPrompt from "../components/ColPrompt";
+import TextPrompt from "../components/TextPrompt";
+import LogPrompt from "../components/LogPrompt";
+import InputPrompt from "../components/InputPrompt";
+import RowPrompt from "../components/RowPrompt";
+import ButtonPrompt from "../components/ButtonPrompt";
 
 export const renderPrompts = (params: RenderPromptsParams): ReactChild[] => {
   const filtered = params.prompts.filter((p): p is Prompt => {
@@ -82,11 +79,7 @@ export const renderPrompts = (params: RenderPromptsParams): ReactChild[] => {
         return <></>;
       default:
         console.warn(`[prompt/unrecognized-type]`, type, args);
-        return (
-          <div key={index} className={className}>
-            Unrecognized type: {type}
-          </div>
-        );
+        return <div className={className}>Unrecognized type: {type}</div>;
     }
   });
 };

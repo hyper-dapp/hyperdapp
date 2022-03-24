@@ -1,12 +1,10 @@
-import { Blockie } from "hd-materials";
+import { Blockie, Chains, getEllipsisTxt, getExplorer } from "hd-materials";
 import { useState } from "react";
 import { useMoralis, useChain } from "react-moralis";
 import { toast } from "react-toastify";
 import { Button } from "primereact/button";
 import { InputText } from "primereact/inputtext";
 import { TOAST_TXT } from "../../../models/toast.models";
-import { getEllipsisTxt } from "../../../helpers/formatters";
-import { getExplorer } from "../../../helpers/networks";
 import AssetSelector, { Asset } from "./AssetSelector";
 
 interface TransferPayload {
@@ -67,7 +65,7 @@ const TransferForm = (props: TransferFormProps) => {
 
     txStatus
       .on("transactionHash", (hash: string) => {
-        const url = `${getExplorer(chainId)}tx/${hash}`;
+        const url = `${getExplorer(chainId as Chains)}tx/${hash}`;
         toast.loading(
           <div>
             <p>{TOAST_TXT.TRANSACTION_PROCESS}</p>
@@ -82,7 +80,7 @@ const TransferForm = (props: TransferFormProps) => {
       })
       .on("receipt", (data: any) => {
         const { transactionHash } = data;
-        const url = `${getExplorer(chainId)}tx/${transactionHash}`;
+        const url = `${getExplorer(chainId as Chains)}tx/${transactionHash}`;
         const hash = getEllipsisTxt(transactionHash);
         toast.dismiss();
         toast.success(

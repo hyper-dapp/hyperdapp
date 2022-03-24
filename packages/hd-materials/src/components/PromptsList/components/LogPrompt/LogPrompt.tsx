@@ -1,5 +1,5 @@
 import React, { FC } from "react";
-import { renderLog } from "../../helpers/renderLog/renderLog";
+import { renderLog } from "./helpers/renderLog";
 import { LogPromptProps, LogTypeEnum } from "./LogPrompt.types";
 
 const LogPrompt: FC<LogPromptProps> = ({ args, children }) => {

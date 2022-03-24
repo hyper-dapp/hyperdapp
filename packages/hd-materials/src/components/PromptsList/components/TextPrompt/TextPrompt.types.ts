@@ -1,4 +1,4 @@
-import { PromptArg } from "../../types/prompt.types";
+import { PromptArg } from "../../PromptsList.types";
 
 export interface TextPromptProps {
   className: string;

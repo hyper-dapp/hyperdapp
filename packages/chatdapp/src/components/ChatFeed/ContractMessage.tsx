@@ -1,4 +1,4 @@
-import { unescapeString } from "hyperdapp";
+import { Chains, getExplorer } from "hd-materials";
 import { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import { useChain } from "react-moralis";
@@ -7,11 +7,9 @@ import { Checkbox } from "primereact/checkbox";
 import { Divider } from "primereact/divider";
 import { useAppDispatch, useAppSelector } from "../../store/store";
 import { sendMessage, setMessagesState } from "../../store/slices/messages";
-import { getExplorer } from "../../helpers/networks";
 import { ContractEvent } from "../../models/contract-event";
 import { MethodStateMutability } from "../../models/contract-method";
 import { MessageModel } from "../../models/message.models";
-import { guestbookAddr, tuitionAddr } from "../../store/slices/flows";
 
 const filterMethods = (
   methods: { [key: string]: any },
@@ -28,70 +26,12 @@ const ContractMessage = () => {
   const contract = useAppSelector(
     (store) => contractId && store.contracts[contractId]
   );
-  const flow = useAppSelector((store) => contractId && store.flows[contractId]);
   const [displayEvents, setDisplayEvents] = useState(true);
   const [eventsSubscription, setEventsSubscription] = useState<any>();
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    if (!contractId || !flow) return;
-    if (![tuitionAddr, guestbookAddr].includes(contractId.toLowerCase()))
-      return;
-
-    const initPrompts = async () => {
-      try {
-        await dispatch(
-          setMessagesState({
-            isLoading: false,
-            chatId: contractId,
-            data: [],
-          })
-        );
-
-        const prompts = await flow.getPrompts();
-        prompts.map(([type, ...args]: string[]) => {
-          if (type === "text") {
-            return dispatch(
-              sendMessage({
-                chatId: contractId,
-                from: contractId,
-                message_type: "text",
-                message: args.map(unescapeString).join(""),
-              })
-            );
-          } else if (type === "button") {
-            return dispatch(
-              sendMessage({
-                chatId: contractId,
-                from: contractId,
-                message_type: "button",
-                message: args,
-              })
-            );
-          } else {
-            return dispatch(
-              sendMessage({
-                chatId: contractId,
-                from: contractId,
-                message_type: "text",
-                message: `Unrecognized prompt type: ${type}`,
-              })
-            );
-          }
-        });
-        console.log("Prompts:", prompts);
-      } catch (err: any) {
-        if (err instanceof Error) throw err;
-        throw new Error(err.args[0].toJavaScript());
-      }
-    };
-
-    initPrompts();
-  }, [flow, contractId, dispatch]);
-
-  useEffect(() => {
     if (!contract) return;
-    if (contractId === "0x3C1F9d85d20bCDBafc35c81898b95025576819E6") return;
 
     const { address } = contract;
 
@@ -104,7 +44,7 @@ const ContractMessage = () => {
           from: address,
           message_type: "text",
           message: `Hello, I am the contract address ${address}`,
-          link: `${getExplorer(chainId)}address/${address}`,
+          link: `${getExplorer(chainId as Chains)}address/${address}`,
         } as MessageModel,
       ],
     };
@@ -131,7 +71,9 @@ const ContractMessage = () => {
               from: contract.address,
               message_type: "event",
               message: event,
-              link: `${getExplorer(chainId)}tx/${event.transactionHash}`,
+              link: `${getExplorer(chainId as Chains)}tx/${
+                event.transactionHash
+              }`,
             })
           );
         }

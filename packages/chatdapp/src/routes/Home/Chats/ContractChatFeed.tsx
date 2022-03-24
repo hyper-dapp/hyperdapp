@@ -1,18 +1,12 @@
+import { getEllipsisTxt, getChainName, Chains } from "hd-materials";
 import { useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { useMoralis, useChain } from "react-moralis";
 import { toast } from "react-toastify";
 import { TOAST_TXT } from "../../../models/toast.models";
 import { ChatType } from "../../../models/chat.models";
-import { getChainName } from "../../../helpers/networks";
-import { getEllipsisTxt } from "../../../helpers/formatters";
 import { useAppDispatch, useAppSelector } from "../../../store/store";
 import { initContract } from "../../../store/slices/contracts";
-import {
-  guestbookAddr,
-  initFlow,
-  tuitionAddr,
-} from "../../../store/slices/flows";
 import ChatFeed from "../../../components/ChatFeed/ChatFeed";
 import ContractMessage from "../../../components/ChatFeed/ContractMessage";
 
@@ -22,16 +16,11 @@ const ContractChatFeed = () => {
   const { chainId } = useChain();
   const messages = useAppSelector((store) => store.messages);
   const dispatch = useAppDispatch();
-  const network = getChainName(chainId);
+  const network = getChainName(chainId as Chains);
 
   useEffect(() => {
     const initChatFeed = async () => {
       if (!contractId || !account || !network) return;
-
-      if ([tuitionAddr, guestbookAddr].includes(contractId.toLowerCase())) {
-        await dispatch(initFlow(contractId));
-        return;
-      }
 
       const contract = await dispatch(
         initContract({

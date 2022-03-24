@@ -1,6 +1,5 @@
-import "./TextPrompt.css";
-import { unescapeString } from "hyperdapp";
 import React, { FC } from "react";
+import { unescapeString } from "hyperdapp";
 import { TextPromptProps } from "./TextPrompt.types";
 
 const TextPrompt: FC<TextPromptProps> = ({ className, args }) => {

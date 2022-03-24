@@ -1,5 +1,3 @@
-import address from "../../../Address";
-
 export enum InputTypeEnum {
   ADDRESS = "address",
   ETH = "eth",

@@ -1,4 +1,4 @@
-import { Prompt } from "../../types/prompt.types";
+import { Prompt } from "../../PromptsList.types";
 
 export enum LogTypeEnum {
   ERROR = "error",

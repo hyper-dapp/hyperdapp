@@ -11,6 +11,7 @@ import RoomChatFeed from "./routes/Home/Chats/RoomChatFeed";
 import App from "./App";
 import "./index.css";
 import reportWebVitals from "./reportWebVitals";
+import FlowChatFeed from "./routes/Home/Chats/FlowChatFeed";
 
 const appId = process.env["REACT_APP_MORALIS_APP_ID"] as string;
 const serverUrl = process.env["REACT_APP_MORALIS_SERVER_URL"] as string;
@@ -28,6 +29,7 @@ ReactDOM.render(
                   path="/contract/:contractId"
                   element={<ContractChatFeed />}
                 />
+                <Route path="/flow/:contractId" element={<FlowChatFeed />} />
                 <Route
                   path="*"
                   element={
