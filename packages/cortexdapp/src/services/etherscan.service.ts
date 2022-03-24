@@ -1,6 +1,6 @@
 import axios from "axios";
+import { networkConfigs } from "hd-materials";
 import { ContractMethodModels } from "../models/contract-method.models";
-import { networkConfigs } from "../helpers/networks";
 
 const apiKey = process.env["REACT_APP_ETHERSCAN_API_KEY"] as string;
 

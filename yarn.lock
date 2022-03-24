@@ -10432,6 +10432,7 @@ __metadata:
     "@types/react": ^17.0.41
     "@types/react-blockies": ^1.4.1
     autoprefixer: ^10.4.4
+    hyperdapp: "workspace:*"
     postcss: ^8.4.12
     primeicons: ^5.0.0
     primereact: ^7.2.1

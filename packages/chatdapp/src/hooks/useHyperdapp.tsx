@@ -1,3 +1,5 @@
+import { ethers } from "ethers";
+import { getEllipsisTxt, getExplorer } from "hd-materials";
 import { useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useChain, useMoralis } from "react-moralis";
@@ -7,9 +9,6 @@ import { getChats, updateChatsState } from "../store/slices/chats";
 import { getOnlineUsers } from "../store/slices/users";
 import { TOAST_TXT } from "../models/toast.models";
 import { ChatMoralisEntity } from "../models/chat.models";
-import { ethers } from "ethers";
-import { getEllipsisTxt } from "../helpers/formatters";
-import { getExplorer } from "../helpers/networks";
 import { Button } from "primereact/button";
 
 interface PartysliceHook {

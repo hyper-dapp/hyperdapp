@@ -3,11 +3,17 @@ import { useNavigate, useParams } from "react-router-dom";
 import { Badge } from "primereact/badge";
 import { Skeleton } from "primereact/skeleton";
 import { ChatType } from "../../models/chat.models";
-import { useAppSelector } from "../../store/store";
+import { useAppDispatch, useAppSelector } from "../../store/store";
+import {
+  guestbookAddr,
+  resetFlowState,
+  tuitionAddr,
+} from "../../store/slices/flows";
 
 const ChatList = () => {
   const { chatId } = useParams();
   const { data, isLoading } = useAppSelector((store) => store.chats);
+  const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   if (isLoading) {
@@ -52,15 +58,26 @@ const ChatList = () => {
         <div
           key={i}
           className="flex flex-row items-center gap-4 p-2"
-          onClick={() =>
-            navigate(
-              `${
-                chat.type === ChatType.CONTRACT
-                  ? "/contract/" + chat.contractAddress
-                  : "/chat/" + chat.id
-              }`
-            )
-          }
+          onClick={() => {
+            let url = "";
+            const { id, type, contractAddress } = chat;
+            if (
+              contractAddress &&
+              [guestbookAddr, tuitionAddr].includes(
+                contractAddress.toLowerCase()
+              )
+            ) {
+              dispatch(resetFlowState);
+              url = "/flow/" + contractAddress;
+            } else {
+              url =
+                type === ChatType.CONTRACT
+                  ? "/contract/" + contractAddress
+                  : "/chat/" + id;
+            }
+
+            return navigate(url);
+          }}
         >
           <div className="flex flex-row items-center gap-2 min-w-0 w-full cursor-pointer">
             <Blockie address={chat.name} size={8} />

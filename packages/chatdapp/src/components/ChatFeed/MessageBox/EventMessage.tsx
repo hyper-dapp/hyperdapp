@@ -1,7 +1,7 @@
+import { getEllipsisTxt } from "hd-materials";
 import { ethers } from "ethers";
 import { Chip } from "primereact/chip";
 import { ContractEvent } from "../../../models/contract-event";
-import { getEllipsisTxt } from "../../../helpers/formatters";
 
 interface EventMessageProps {
   message: ContractEvent;

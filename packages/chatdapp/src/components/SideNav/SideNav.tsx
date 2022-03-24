@@ -1,13 +1,12 @@
-import { Address } from "hd-materials";
+import { Address, Chains, getChainName } from "hd-materials";
 import { useChain, useMoralis } from "react-moralis";
-import { getChainName } from "../../helpers/networks";
 import ActionBtnContainer from "./ActionBtnContainer";
 import ChatList from "./ChatList";
 
 const SideNav = () => {
   const { account } = useMoralis();
   const { chainId } = useChain();
-  const networkName = getChainName(chainId);
+  const networkName = getChainName(chainId as Chains);
 
   return (
     <>

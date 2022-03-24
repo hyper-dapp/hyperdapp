@@ -1,4 +1,4 @@
-import { Address } from "hd-materials";
+import { Address, getEllipsisTxt } from "hd-materials";
 import { useState } from "react";
 import { useChain, useMoralis } from "react-moralis";
 import { useNavigate } from "react-router-dom";
@@ -8,7 +8,6 @@ import { Dropdown } from "primereact/dropdown";
 import { InputText } from "primereact/inputtext";
 import { ChatPayload, ChatType } from "../../../models/chat.models";
 import { User } from "../../../models/user.models";
-import { getEllipsisTxt } from "../../../helpers/formatters";
 import { useAppDispatch, useAppSelector } from "../../../store/store";
 import { getUser } from "../../../store/slices/users";
 import { saveChat } from "../../../store/slices/chats";
