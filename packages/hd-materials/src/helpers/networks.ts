@@ -18,6 +18,7 @@ interface NetworkConfig {
   chainName?: string;
   currencyName?: string;
   currencySymbol?: string;
+  etherscanAPI?: string;
   rpcUrl?: string;
   wrapped?: string;
 }
@@ -27,26 +28,31 @@ export const networkConfigs: { [key in Chains]: NetworkConfig } = {
     chainName: "mainnet",
     currencySymbol: "ETH",
     blockExplorerUrl: "https://etherscan.io/",
+    etherscanAPI: "https://api.etherscan.io/api",
     wrapped: "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
   },
   [Chains.ROPSTEN]: {
     chainName: "ropsten",
     currencySymbol: "ETH",
+    etherscanAPI: "https://api-ropsten.etherscan.io/api",
     blockExplorerUrl: "https://ropsten.etherscan.io/",
   },
   [Chains.RINKEBY]: {
     chainName: "rinkeby",
     currencySymbol: "ETH",
+    etherscanAPI: "https://api-rinkeby.etherscan.io/api",
     blockExplorerUrl: "https://rinkeby.etherscan.io/",
   },
   [Chains.GOERLY]: {
     chainName: "goerli",
     currencySymbol: "ETH",
+    etherscanAPI: "https://api-goerli.etherscan.io/api",
     blockExplorerUrl: "https://goerli.etherscan.io/",
   },
   [Chains.KOVAN]: {
     chainName: "kovan",
     currencySymbol: "ETH",
+    etherscanAPI: "https://api-kovan.etherscan.io/api",
     blockExplorerUrl: "https://kovan.etherscan.io/",
   },
   [Chains.LOCAL]: {
