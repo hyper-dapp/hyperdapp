@@ -9,34 +9,32 @@ o.spec('HTTP calls', () => {
     return flow
   }
 
-  o('basic', async () => {
+  o('get', async () => {
+    let caughtMethod
     const flow = await make(`
         oracle(foo, r, 'example.com').
-        bar(Out) :- call_http(foo, '/a/b' ++ '/c', Out).
+        bar(Out) :- get_http(foo, '/a/b' ++ '/c', Out).
       `,
-      async function onCallHttp({ url, options }) {
-        return { x: { y: [10, 20] } }
+      async function onCallHttp({ method, url, options }) {
+        caughtMethod = method
+        return [200, {}, { x: { y: [10, 20, url] } }]
       }
     )
-    const [{ Out }] = await flow.query(`bar(Out).`)
 
-    // onCallHttp should return a JS object.
-    // Tau knows recognizes JS objects and can pass them around as values.
-    // In the near future we'll want to modify Tau to allow unification on
-    // JS objects directly, instead of having to use prop/3 or json_prolog/2
-    //
-    o(Out).deepEquals({ x: { y: [10, 20] } })
+    const [{ Out }] = await flow.query(`bar(Out).`)
+    o(Out).deepEquals({ x: { y: [10, 20, 'https://example.com/a/b/c'] } })
+    o(caughtMethod).equals('GET')
   })
 
   o('options parsing', async () => {
     let caughtOptions
     const flow = await make(`
         oracle(foo, r, 'example.com').
-        bar(Out) :- call_http(foo, '/a/b' ++ '/c', Out, [a: 10, b: [20, 30]]).
+        bar(Out) :- get_http(foo, '/a/b' ++ '/c', Out, [a: 10, b: [20, 30]]).
       `,
       async function onCallHttp({ url, options }) {
         caughtOptions = options
-        return 9
+        return [200, {}, 9]
       }
     )
     await flow.query(`bar(Out).`)

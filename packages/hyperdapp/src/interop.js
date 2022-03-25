@@ -1,3 +1,11 @@
+import dayjs from 'dayjs'
+import advancedFormat from 'dayjs/plugin/advancedFormat.js'
+
+// Support more date formatting
+// https://day.js.org/docs/en/plugin/advanced-format
+dayjs.extend(advancedFormat)
+
+export const ADDRESS_REGEX = /^0x[0-9a-f]{40}$/i
 
 export function unescapeString(stringOrTerm) {
   if (typeof stringOrTerm === 'string') {
@@ -5,15 +13,50 @@ export function unescapeString(stringOrTerm) {
   }
   else if (stringOrTerm[0] === 'address') {
     const addr = unescapeString(stringOrTerm[1])
-    return `${addr.slice(0, 6)}..${addr.slice(18, 22)}`
+    return `${addr.slice(0, 6)}..${addr.slice(38, 42)}`
   }
   else if (stringOrTerm[0] === 'eth') {
     const wei = stringOrTerm[1]
-    const [integer, decimals] =
-      wei.length >= 18
-      ? [wei.slice(0, wei.length - 18), wei.slice(wei.length - 18).slice(0, 5)]
+    const label = stringOrTerm[2] ? unescapeString(stringOrTerm[2]) : 'ETH'
+
+    let [integer, decimals] =
+      wei.length > 18
+      ? [wei.slice(0, wei.length - 18) || '0', wei.slice(wei.length - 18).replace(/0+$/, '')]
       : ['0', new Array(18 - wei.length).fill('0').join('') + wei.replace(/0+$/, '')]
-    return `${integer}.${decimals} ETH`
+
+    // Attempt to only show 5 decimals
+    let rounded = false
+    if (decimals.length > 5) {
+      let i = 4
+      for (; i < decimals.length; i++) {
+        if (decimals[i] !== '0') {
+          break
+        }
+      }
+      if (decimals[i+1]) {
+        // Round decimal
+        const nextDigit = +decimals[i+1]
+        const overflow = decimals[i] === '9' && nextDigit >= 5
+        decimals = decimals.slice(0, overflow ? i - 1 : i) + (
+          overflow ? 1 :
+          nextDigit >= 5 ? +decimals[i] + 1 :
+          decimals[i]
+        )
+        rounded = true
+      }
+    }
+
+    return `${rounded ? '~' : ''}${integer}${decimals.length ? '.'+decimals : ''} ${label}`
+  }
+  else if (stringOrTerm[0] === 'date') {
+    let date = stringOrTerm[1]
+    // Let a dot (.) pass in case we get a float (we cut off the decimals via parseInt)
+    if (/^[0-9.]+$/.test(date)) {
+      // Assume date is in seconds. Convert to JS timestamp
+      date = parseInt(date, 10) * 1000
+    }
+    const formatString = unescapeString(stringOrTerm[2])
+    return dayjs(date).format(formatString)
   }
 }
 
@@ -65,6 +108,9 @@ export function convertEthersContractCallResult(value) {
   }
   else if (Array.isArray(value)) {
     return value.map(convertEthersContractCallResult)
+  }
+  else if (typeof value === 'string' && ADDRESS_REGEX.test(value)) {
+    return value.toLowerCase()
   }
   return value
 }

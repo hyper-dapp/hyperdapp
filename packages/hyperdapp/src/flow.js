@@ -21,6 +21,10 @@ export async function createFlow(flowCode, {
   // as opposed to an always up to date reference via prolog.__env
   const env = {
 
+    // Global cache
+    // Should be cleared when account or chain id changes
+    cache: {},
+
     context: {
       // Internal state
       __: {
@@ -60,10 +64,21 @@ export async function createFlow(flowCode, {
 
       let cleanValue
       if (type === 'address') {
+        value = value.toLowerCase()
         if (! /^0x/.test(value) && value.length <= 40) {
           value = '0x' + value
         }
         if (/^0x[0-9a-f]{40}/.test(value)) {
+          cleanValue = [value]
+        }
+      }
+      // TODO: Support more bytes/int/uint types
+      else if (type === 'bytes32') {
+        value = value.toLowerCase()
+        if (! /^0x/.test(value) && value.length <= 64) {
+          value = '0x' + new Array(64 - value.length).fill('0').join('') + value
+        }
+        if (/^0x[0-9a-f]{64}/.test(value)) {
           cleanValue = [value]
         }
       }
@@ -141,6 +156,7 @@ export async function createFlow(flowCode, {
         env: callEnv,
         args,
         block: currentBlock,
+        cache: env.cache,
         value,
         contractAddress: targetAddress,
         mutability: {
@@ -161,13 +177,16 @@ export async function createFlow(flowCode, {
       )
     },
 
-    async callHttp(url, rawOptions) {
+    async callHttp(method, url, rawOptions) {
       const options = {}
       for (let [key, val] of rawOptions) {
         options[key] = val
       }
       const result = await onCallHttp({
         url,
+        block: currentBlock,
+        cache: env.cache,
+        method,
         options
       })
       return result

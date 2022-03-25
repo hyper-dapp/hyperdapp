@@ -167,14 +167,14 @@ call_fn(Contract, Calldata, Options0, Result) :-
   (
     member(X, Abi),
     abi_fn(X, FnSig, Ret, Mut),
-    FnSig =.. [Fn | ParamsTypes],
-    length(ParamsTypes, N),
+    FnSig =.. [Fn | ParamsTypes0],
+    length(ParamsTypes0, N),
     length(Args, N),
     !
   ) ?? 'ABI function not found',
 
   maplist(serialize_term, Options, Opts),
-  fn_sig_atom(Fn, ParamsTypes, FnSigAtom),
+  fn_sig_atom(Fn, ParamsTypes0, FnSigAtom, ParamsTypes),
   apply(callFn, [Addr, FnSigAtom, Mut, ParamsTypes, Args, Ret, Opts], Result).
 
 %% TODO: Switch to { key: value } syntax
@@ -209,11 +209,11 @@ parse_call_fn_args(Ctx, [X|Xs], [Y|Ys]) :-
 parse_call_fn_args(_, [], []).
 
 
-%% Stringify to ethers-compatible string
+%% Stringify params and function sig to ethers-compatible strings
 %%
-fn_sig_atom(Fn, Params, Atom) :-
-  findall(Strs, (member(P, Params), fn_sig_atom_(P, Strs)), Parts0),
-  atomic_list_concat(Parts0, ',', ParamsAtom),
+fn_sig_atom(Fn, Params, Atom, EthersParams) :-
+  findall(Str, (member(P, Params), fn_sig_atom_(P, Str)), EthersParams),
+  atomic_list_concat(EthersParams, ',', ParamsAtom),
   atomic_list_concat([Fn, '(', ParamsAtom, ')'], Atom).
 
 fn_sig_atom_(array(Type), Atom) :-
@@ -233,10 +233,16 @@ fn_sig_atom_(Type, Type).
 %%
 %% Oracle HTTP calls
 %%
-call_http(Contract, Calldata, Result) :-
-  call_http(Contract, Calldata, Result, []).
+get_http(Contract, Calldata, Result) :-
+  get_http(Contract, Calldata, Result, []).
 
-call_http(Oracle, Path, Result, Options0) :-
+get_http(Oracle, Path, Result, Options) :-
+  call_http(Oracle, 'GET', Path, [200, _, Result], Options).
+
+%% Res is expected to be in the format:
+%% [StatusCode, Headers, JsonObject]
+%%
+call_http(Oracle, Method, Path, Res, Options0) :-
   parse_call_http_options(ctx(Oracle, Path), Options0, Options),
   ground(Oracle) ?? 'Oracle must be ground',
   ground(Path) ?? 'Path must be ground',
@@ -249,7 +255,7 @@ call_http(Oracle, Path, Result, Options0) :-
   ground(Path) ?? path_not_ground(Path),
   resolve_url(Host, Path, Url) ?? invalid_url(Host, Path),
 
-  apply(callHttp, [Url, Options], Result).
+  apply(callHttp, [Method, Url, Options], Res).
 
 parse_call_http_options(Ctx, [Key: Value | Xs], [[Key, Value] | Ys]) :-
   !,
