@@ -103,7 +103,7 @@ export function parseJson(json) {
 }
 
 export function convertEthersContractCallResult(value) {
-  if (value?.constructor?.name === 'BigNumber') {
+  if (value?.toBigInt) {
     return value.toBigInt()
   }
   else if (Array.isArray(value)) {
