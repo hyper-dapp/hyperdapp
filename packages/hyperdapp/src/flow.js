@@ -169,7 +169,9 @@ export async function createFlow(flowCode, {
       })
       // console.log(functionSig, '=>', returnValue)
 
-      return returnValue.map((value, i) =>
+      // An EVM function should always return an array of results.
+      // If undefined was returned, then an error was thrown.
+      return returnValue?.map((value, i) =>
         // Maintain internal consistency by ensuring all addresses are always lowercase
         returnType[i] === 'address'
         ? value.toLowerCase()
