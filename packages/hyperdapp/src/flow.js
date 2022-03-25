@@ -73,7 +73,7 @@ export async function createFlow(flowCode, {
         }
       }
       // TODO: Support more bytes/int/uint types
-      else if (type === 'bytes32') {
+      else if (type === 'bytes32' && value.length) {
         value = value.toLowerCase()
         if (! /^0x/.test(value) && value.length <= 64) {
           value = '0x' + new Array(64 - value.length).fill('0').join('') + value
